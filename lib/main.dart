@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart'; // Add this import
 import 'core/navigation/route_generator.dart';
 import 'features/property/data/property_repository.dart';
 import 'features/favorites/providers/favorites_provider.dart';
@@ -29,7 +30,11 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // Setup providers
+        // Add ThemeProvider
+        ChangeNotifierProvider(
+          create: (_) => ThemeProvider(),
+        ),
+        // Setup other providers
         ChangeNotifierProvider<PropertyProvider>(
           create: (_) => PropertyProvider(propertyRepository),
         ),
@@ -48,13 +53,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get current theme from provider
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     return MaterialApp(
       title: 'Real Estate App',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: themeProvider.themeMode, // Use theme from provider
       debugShowCheckedModeBanner: false,
-      initialRoute: '/', // This should directly go to home screen
+      initialRoute: '/',
       onGenerateRoute: RouteGenerator.generateRoute,
     );
   }

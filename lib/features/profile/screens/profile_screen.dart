@@ -8,6 +8,7 @@ import '/core/constants/app_styles.dart';
 import '/core/navigation/route_names.dart';
 import '/core/utils/snackbar_utils.dart';
 import '/features/favorites/providers/favorites_provider.dart';
+import '/core/theme/theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -31,28 +32,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // UI state
   bool _isDarkMode = false;
-  bool _isNotificationsEnabled = true;
-  bool _isLocationEnabled = true;
   bool _isLoading = false;
   File? _imageFile;
   
   // Form controllers for editing
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _bioController = TextEditingController();
-
+  
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    // Get the current theme mode
+    _loadThemeSettings();
     debugPrint('ProfileScreen: Building screen');
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
-    _bioController.dispose();
     super.dispose();
   }
 
@@ -67,21 +64,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _userData['name'] = _prefs.getString('user_name') ?? _userData['name'];
         _userData['email'] = _prefs.getString('user_email') ?? _userData['email'];
-        _userData['phone'] = _prefs.getString('user_phone') ?? _userData['phone'];
         _userData['profileImage'] = _prefs.getString('user_profile_image') ?? _userData['profileImage'];
         _userData['bio'] = _prefs.getString('user_bio') ?? _userData['bio'];
         _userData['role'] = _prefs.getString('user_role') ?? _userData['role'];
         _userData['joinDate'] = _prefs.getString('user_join_date') ?? _userData['joinDate'];
         
-        // Load settings
+        // Load theme settings only
         _isDarkMode = _prefs.getBool('settings_dark_mode') ?? false;
-        _isNotificationsEnabled = _prefs.getBool('settings_notifications') ?? true;
-        _isLocationEnabled = _prefs.getBool('settings_location') ?? true;
         
         // Initialize controllers
         _nameController.text = _userData['name'];
-        _phoneController.text = _userData['phone'];
-        _bioController.text = _userData['bio'];
       });
     } catch (e) {
       debugPrint('Error loading user data: $e');
@@ -91,37 +83,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Save user data to SharedPreferences
+  // Simplified save user data method
   Future<void> _saveUserData() async {
     setState(() => _isLoading = true);
     
     try {
       await _prefs.setString('user_name', _userData['name']);
       await _prefs.setString('user_email', _userData['email']);
-      await _prefs.setString('user_phone', _userData['phone']);
       await _prefs.setString('user_profile_image', _userData['profileImage']);
-      await _prefs.setString('user_bio', _userData['bio']);
-      await _prefs.setString('user_role', _userData['role']);
       await _prefs.setString('user_join_date', _userData['joinDate']);
       
-      // Save settings
+      // Save only dark mode setting
       await _prefs.setBool('settings_dark_mode', _isDarkMode);
-      await _prefs.setBool('settings_notifications', _isNotificationsEnabled);
-      await _prefs.setBool('settings_location', _isLocationEnabled);
       
-      if (mounted) { // Add mounted check
+      if (mounted) {
         SnackBarUtils.showSuccessSnackBar(context, 'Profile updated successfully');
       }
     } catch (e) {
       debugPrint('Error saving user data: $e');
-      if (mounted) { // Add mounted check
+      if (mounted) {
         SnackBarUtils.showErrorSnackBar(context, 'Failed to save user data');
       }
     } finally {
-      if (mounted) { // Add mounted check
+      if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  // Add method to load theme settings
+  void _loadThemeSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isDarkMode = prefs.getBool('settings_dark_mode') ?? false;
+    });
   }
   
   @override
@@ -190,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           
-          // User name and role
+          // User name only - simplified
           Text(
             _userData['name'],
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -199,10 +194,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            _userData['role'],
+            _userData['email'],
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.lightColorScheme.primary,
-              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
             ),
           ),
           
@@ -220,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           OutlinedButton.icon(
             onPressed: () => _navigateToEditProfile(),
             icon: const Icon(Icons.edit),
-            label: const Text('Edit Profile'),
+            label: const Text('Edit Name'), // Changed to Edit Name for clarity
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.lightColorScheme.primary),
               shape: RoundedRectangleBorder(
@@ -258,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 20, 
                     height: 20, 
                     child: CircularProgressIndicator(strokeWidth: 2)
-                  )
+                  ) 
                 : Text('${provider.favorites.length}', style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
@@ -401,12 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        backgroundColor: (iconColor ?? AppColors.lightColorScheme.primary).withValues(
-          alpha: 26, // 0.1 * 255 = approximately 26
-          red: (iconColor ?? AppColors.lightColorScheme.primary).red.toDouble(),
-          green: (iconColor ?? AppColors.lightColorScheme.primary).green.toDouble(),
-          blue: (iconColor ?? AppColors.lightColorScheme.primary).blue.toDouble(),
-        ),
+        backgroundColor: (iconColor ?? AppColors.lightColorScheme.primary).withAlpha(26),
         child: Icon(icon, color: iconColor ?? AppColors.lightColorScheme.primary),
       ),
       title: Text(
@@ -528,36 +517,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Dark Mode Toggle
+                  // Only Dark Mode Toggle
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Dark Mode'),
-                    subtitle: const Text('Enable dark theme'),
+                    subtitle: const Text('Enable dark theme for the app'),
                     value: _isDarkMode,
                     onChanged: (value) {
                       setModalState(() => _isDarkMode = value);
-                    },
-                  ),
-                  
-                  // Notifications Toggle
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Notifications'),
-                    subtitle: const Text('Receive app notifications'),
-                    value: _isNotificationsEnabled,
-                    onChanged: (value) {
-                      setModalState(() => _isNotificationsEnabled = value);
-                    },
-                  ),
-                  
-                  // Location Toggle
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Location Services'),
-                    subtitle: const Text('Allow location access'),
-                    value: _isLocationEnabled,
-                    onChanged: (value) {
-                      setModalState(() => _isLocationEnabled = value);
                     },
                   ),
                   
@@ -568,16 +535,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Save settings to SharedPreferences
+                        // Save dark mode setting
                         await _prefs.setBool('settings_dark_mode', _isDarkMode);
-                        await _prefs.setBool('settings_notifications', _isNotificationsEnabled);
-                        await _prefs.setBool('settings_location', _isLocationEnabled);
                         
+                        // Apply the theme change
                         if (context.mounted) {
+                          // Update theme provider
+                          final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+                          themeProvider.setDarkMode(_isDarkMode);
+                          
                           Navigator.pop(context);
                           SnackBarUtils.showSuccessSnackBar(
                             context, 
-                            'Settings updated successfully'
+                            'Theme settings updated'
                           );
                         }
                       },
@@ -586,7 +556,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Apply Changes'),
+                      child: const Text('Apply Theme'),
                     ),
                   ),
                   
@@ -631,12 +601,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _navigateToEditProfile() async {
     debugPrint('ProfileScreen: Navigating to Edit Profile');
     
-    // Set up controllers with current data
+    // Set up controller with current data - only name now
     _nameController.text = _userData['name'];
-    _phoneController.text = _userData['phone'];
-    _bioController.text = _userData['bio'];
     
-    // Show dialog with form
+    // Show dialog with simplified form
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -651,24 +619,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   labelText: 'Name',
                   prefixIcon: Icon(Icons.person),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _bioController,
-                decoration: const InputDecoration(
-                  labelText: 'Bio',
-                  prefixIcon: Icon(Icons.info),
-                ),
-                maxLines: 3,
               ),
             ],
           ),
@@ -689,15 +639,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (result == true) {
       setState(() {
         _userData['name'] = _nameController.text;
-        _userData['phone'] = _phoneController.text;
-        _userData['bio'] = _bioController.text;
+        // We're not updating phone or bio anymore
       });
       
       // Save to SharedPreferences
       await _saveUserData();
     }
   }
-  
+
   // Implementation of taking a profile photo
   Future<void> _takeProfilePhoto() async {
     debugPrint('ProfileScreen: Taking profile photo');
@@ -728,7 +677,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
-  
+
   // Implementation of picking a profile photo from gallery
   Future<void> _pickProfilePhoto() async {
     debugPrint('ProfileScreen: Picking profile photo from gallery');
@@ -759,7 +708,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
-  
+
   // Implementation of removing a profile photo
   void _removeProfilePhoto() async {
     debugPrint('ProfileScreen: Removing profile photo');
@@ -770,7 +719,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
     // Save to shared preferences
     await _prefs.setString('user_profile_image', _userData['profileImage']);
-    if (mounted) { // Add mounted check before using context
+    if (mounted) { // Add mounted check
       SnackBarUtils.showSuccessSnackBar(context, 'Profile photo removed');
     }
   }
@@ -962,7 +911,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
                 return;
               }
-              
               Navigator.pop(context);
               SnackBarUtils.showSuccessSnackBar(
                 context, 
@@ -975,7 +923,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  
+
   // Support screen
   void _navigateToSupport() {
     debugPrint('ProfileScreen: Navigating to Support');
