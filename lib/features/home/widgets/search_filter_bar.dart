@@ -16,49 +16,69 @@ class SearchFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 50,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, 2),
+            blurRadius: 4,
           ),
         ],
       ),
       child: Row(
         children: [
+          const SizedBox(width: 12),
+          Icon(
+            Icons.search_rounded,
+            color: AppColors.lightColorScheme.primary,
+            size: 24,
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: TextField(
               controller: controller,
-              decoration: InputDecoration(
-                hintText: 'Search address, city, or zip code...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+              decoration: const InputDecoration(
+                hintText: 'Search properties, locations...',
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                isDense: true,
+                hintStyle: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+              textInputAction: TextInputAction.search,
               onSubmitted: onSearchSubmitted,
             ),
           ),
           Container(
-            height: 56,
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: Colors.grey.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-            ),
+            height: 36,
+            width: 1,
+            color: Colors.grey[300],
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
             child: IconButton(
-              icon: const Icon(Icons.tune),
-              color: AppColors.lightColorScheme.primary,
+              icon: Icon(
+                Icons.tune_rounded,
+                color: AppColors.lightColorScheme.primary,
+              ),
               onPressed: onFilterTap,
-              tooltip: 'Filters',
+              splashRadius: 24,
             ),
           ),
         ],

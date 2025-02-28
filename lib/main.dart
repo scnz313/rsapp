@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart'; // Add this import
 import 'core/navigation/route_generator.dart';
+import 'core/navigation/route_names.dart';
 import 'features/property/data/property_repository.dart';
 import 'features/favorites/providers/favorites_provider.dart';
 import 'features/property/presentation/providers/property_provider.dart';
@@ -62,7 +63,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode, // Use theme from provider
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      initialRoute: RouteNames.splash,
       onGenerateRoute: RouteGenerator.generateRoute,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -29,78 +30,257 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final TextEditingController _searchController = TextEditingController();
   final MapController _mapController = MapController();
   
+  Future<void> _loadProperties() async {
+    final provider = Provider.of<PropertyProvider>(context, listen: false);
+    await provider.fetchProperties();
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadProperties();
+    
+    // Apply status bar color as soon as widget initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setStatusBarColor();
+    });
   }
   
   @override
   void dispose() {
     _searchController.dispose();
     _tabController.dispose();
+    
+    // Reset status bar color when leaving screen
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
     super.dispose();
   }
   
-  Future<void> _loadProperties() async {
-    final propertyProvider = Provider.of<PropertyProvider>(context, listen: false);
-    await propertyProvider.fetchFeaturedProperties();
-    await propertyProvider.fetchRecentProperties();
+  // Method to set status bar color
+  void _setStatusBarColor() {
+    final Color primaryColor = AppColors.lightColorScheme.primary;
+    
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: primaryColor, // Set to exact same green color as header
+      systemNavigationBarColor: primaryColor, // Also set bottom system nav color
+      statusBarIconBrightness: Brightness.light, 
+      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark, // For iOS
+    ));
   }
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                pinned: false,
-                floating: true,
-                snap: true,
-                title: const Text('Real Estate App'),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () => Navigator.pushNamed(context, RouteNames.notifications),
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // Refined header with better spacing and visual appeal
+          Material(
+            elevation: 2, // Slight elevation for better visual hierarchy
+            color: AppColors.lightColorScheme.primary,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Status bar space
+                SizedBox(height: MediaQuery.of(context).padding.top),
+                
+                // Search bar with improved spacing and size
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: SizedBox(
+                    height: 46, // Increased from 40 for better touch target
+                    child: SearchFilterBar(
+                      controller: _searchController,
+                      onSearchSubmitted: _handleSearch,
+                      onFilterTap: _showFilterBottomSheet,
+                    ),
                   ),
-                ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(120),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        child: SearchFilterBar(
-                          controller: _searchController,
-                          onSearchSubmitted: _handleSearch,
-                          onFilterTap: _showFilterBottomSheet,
-                        ),
-                      ),
-                      QuickFilterChips(
-                        selectedFilter: _selectedFilter,
-                        onFilterSelected: (filter) {
-                          setState(() {
-                            _selectedFilter = filter;
-                          });
-                        },
+                ),
+                
+                // Filter chips with improved layout
+                if (!_isMapView)
+                  Container(
+                    height: 46, // Increased height for better visibility
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        _buildFilterChip('All', _selectedFilter == 'All'),
+                        _buildFilterChip('For Sale', _selectedFilter == 'For Sale'),
+                        _buildFilterChip('For Rent', _selectedFilter == 'For Rent'),
+                        _buildFilterChip('Furnished', _selectedFilter == 'Furnished'),
+                        _buildFilterChip('Newest', _selectedFilter == 'Newest'),
+                        _buildFilterChip('Price ↓', _selectedFilter == 'Price ↓'),
+                      ],
+                    ),
+                  ),
+                
+                // Curved bottom edge with shadow effect
+                Container(
+                  height: 20, // Increased height for more pronounced curve
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        offset: const Offset(0, -2),
+                        blurRadius: 4,
+                        spreadRadius: -2,
                       ),
                     ],
                   ),
                 ),
-              ),
-            ];
-          },
-          body: _buildMainContent(),
-        ),
+              ],
+            ),
+          ),
+          
+          // Main content
+          Expanded(child: _buildMainContent()),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _toggleViewMode(),
-        child: Icon(_isMapView ? Icons.list : Icons.map),
+        icon: Icon(_isMapView ? Icons.view_list_rounded : Icons.map_rounded),
+        label: Text(_isMapView ? 'List' : 'Map'),
+        backgroundColor: AppColors.lightColorScheme.primary,
       ),
       bottomNavigationBar: _buildBottomNavBar(),
+    );
+  }
+
+  // Updated filter chip with better styling
+  Widget _buildFilterChip(String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () => _updateFilter(label),
+      child: Container(
+        margin: const EdgeInsets.only(right: 10, top: 4, bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ] : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppColors.lightColorScheme.primary : Colors.white,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14,
+            letterSpacing: 0.2, // Improved typography
+          ),
+        ),
+      ),
+    );
+  }
+  
+  // Helper method to update filter safely
+  void _updateFilter(String filter) {
+    if (_selectedFilter != filter) {
+      Future.microtask(() {
+        setState(() {
+          _selectedFilter = filter;
+        });
+      });
+    }
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      height: 40, // Reduced from 44
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 12),
+          Icon(
+            Icons.search_rounded,
+            color: AppColors.lightColorScheme.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: 'Search properties...',
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                hintStyle: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 15,
+                ),
+              ),
+              style: const TextStyle(fontSize: 15),
+              textInputAction: TextInputAction.search,
+              onSubmitted: _handleSearch,
+            ),
+          ),
+          Container(
+            height: 24,
+            width: 1,
+            color: Colors.grey[300],
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.tune_rounded,
+              color: AppColors.lightColorScheme.primary,
+              size: 20,
+            ),
+            onPressed: _showFilterBottomSheet,
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(
+              minWidth: 32,
+              minHeight: 32,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          _buildFilterChip('All', _selectedFilter == 'All'),
+          _buildFilterChip('For Sale', _selectedFilter == 'For Sale'),
+          _buildFilterChip('For Rent', _selectedFilter == 'For Rent'),
+          _buildFilterChip('Furnished', _selectedFilter == 'Furnished'),
+          _buildFilterChip('Newest', _selectedFilter == 'Newest'),
+          _buildFilterChip('Price ↓', _selectedFilter == 'Price ↓'),
+        ],
+      ),
     );
   }
 
@@ -195,58 +375,44 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         final properties = provider.recentProperties;
         final markers = _createMarkers(properties);
 
-        return Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: LatLng(34.0522, -118.2437), // Los Angeles
-                initialZoom: 10.0,
-                interactionOptions: InteractionOptions( // Remove 'const' here
-                  flags: InteractiveFlag.all,
-                ),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: const ['a', 'b', 'c'],
-                ),
-                MarkerClusterLayerWidget(
-                  options: MarkerClusterLayerOptions(
-                    maxClusterRadius: 120,
-                    size: const Size(40, 40),
-                    markers: markers,
-                    builder: (context, markers) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.lightColorScheme.primary.withValues(
-                            alpha: (0.8 * 255).toDouble(), // Use withValues instead of withOpacity
-                            red: AppColors.lightColorScheme.primary.r.toDouble(),
-                            green: AppColors.lightColorScheme.primary.g.toDouble(),
-                            blue: AppColors.lightColorScheme.primary.b.toDouble(),
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            markers.length.toString(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+        return FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: LatLng(34.0837, 74.7973), // KASHMIR 
+            initialZoom: 10.0,
+            interactionOptions: InteractionOptions( // Remove 'const' here
+              flags: InteractiveFlag.all,
             ),
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: SearchFilterBar(
-                controller: _searchController,
-                onSearchSubmitted: _handleSearch,
-                onFilterTap: _showFilterBottomSheet,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              subdomains: const ['a', 'b', 'c'],
+            ),
+            MarkerClusterLayerWidget(
+              options: MarkerClusterLayerOptions(
+                maxClusterRadius: 120,
+                size: const Size(40, 40),
+                markers: markers,
+                builder: (context, markers) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.lightColorScheme.primary.withValues(
+                        alpha: (0.8 * 255).toDouble(), // Use withValues instead of withOpacity
+                        red: AppColors.lightColorScheme.primary.r.toDouble(), // Use .r instead of .red
+                        green: AppColors.lightColorScheme.primary.g.toDouble(), // Use .g instead of .green
+                        blue: AppColors.lightColorScheme.primary.b.toDouble(), // Use .b instead of .blue
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        markers.length.toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -257,14 +423,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   
   List<Marker> _createMarkers(List<PropertyModel> properties) {
     return properties.map((property) {
-      // Use default location if property doesn't have coordinates
-      final LatLng position = property.latitude != null && property.longitude != null
-          ? LatLng(property.latitude!, property.longitude!)
-          : const LatLng(34.0522, -118.2437); // Default to LA
-      
+     // Use default location if property doesn't have coordinates
+final LatLng position = property.latitude != null && property.longitude != null
+    ? LatLng(property.latitude!, property.longitude!)
+    : const LatLng(34.0837, 74.7973); // Default to Srinagar, Kashmir
       return Marker(
-        width: 40.0,
-        height: 40.0,
+        width: 50.0,
+        height: 50.0,
         point: position,
         child: GestureDetector(
           onTap: () => _showPropertyBottomSheet(property),
@@ -272,14 +437,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             decoration: BoxDecoration(
               color: AppColors.lightColorScheme.primary,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(color: Colors.white, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 '\$${(property.price / 1000).round()}k',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -347,12 +519,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 26, // 0.1 * 255 = approximately 26
-              red: Colors.black.r.toDouble(),
-              green: Colors.black.g.toDouble(),
-              blue: Colors.black.b.toDouble(),
-            ),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -1),
           ),
@@ -360,15 +527,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavBarItem(Icons.home_outlined, 'Home', isSelected: true),
-              _buildNavBarItem(Icons.search_outlined, 'Search'),
-              _buildNavBarItem(Icons.add_circle_outline, 'Post'),
-              _buildNavBarItem(Icons.favorite_border_outlined, 'Favorites'),
-              _buildNavBarItem(Icons.person_outline, 'Profile'),
+              _buildNavBarItem(Icons.home_rounded, 'Home', isSelected: true),
+              _buildNavBarItem(Icons.search_rounded, 'Search'),
+              _buildNavBarItem(Icons.add_circle_rounded, 'Post'),
+              _buildNavBarItem(Icons.favorite_rounded, 'Favorites'),
+              _buildNavBarItem(Icons.person_rounded, 'Profile'),
             ],
           ),
         ),
@@ -398,12 +565,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isSelected 
-                ? AppColors.lightColorScheme.primary
-                : Colors.grey,
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.lightColorScheme.primary.withOpacity(0.1) : Colors.transparent,
+              borderRadius: BorderRadius.circular(14.0),
+            ),
+            child: Icon(
+              icon,
+              color: isSelected 
+                  ? AppColors.lightColorScheme.primary
+                  : Colors.grey,
+              size: isSelected ? 28 : 24,
+            ),
           ),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
