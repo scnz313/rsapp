@@ -41,9 +41,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _tabController = TabController(length: 2, vsync: this);
     _loadProperties();
     
-    // Apply status bar color as soon as widget initializes
+    // Add debug logging
+    debugPrint('🏠 HomeScreen: initState called');
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setStatusBarColor();
+      _logDebugInfo(); // Add debug logging
     });
   }
   
@@ -75,6 +78,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   
   @override
   Widget build(BuildContext context) {
+    // Add debug logging
+    debugPrint('Building HomeScreen - Screen width: ${MediaQuery.of(context).size.width}');
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -93,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   child: SizedBox(
-                    height: 46, // Increased from 40 for better touch target
+                    height: 45,
                     child: SearchFilterBar(
                       controller: _searchController,
                       onSearchSubmitted: _handleSearch,
@@ -102,31 +108,32 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                 ),
                 
-                // Filter chips with improved layout
+                // Filter chips with fixed height and better scrolling
                 if (!_isMapView)
-                  Container(
-                    height: 46, // Increased height for better visibility
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListView(
+                  SizedBox(
+                    height: 42, // Fixed height
+                    child: ListView.builder( // Changed to ListView.builder for better performance
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      children: [
-                        _buildFilterChip('All', _selectedFilter == 'All'),
-                        _buildFilterChip('For Sale', _selectedFilter == 'For Sale'),
-                        _buildFilterChip('For Rent', _selectedFilter == 'For Rent'),
-                        _buildFilterChip('Furnished', _selectedFilter == 'Furnished'),
-                        _buildFilterChip('Newest', _selectedFilter == 'Newest'),
-                        _buildFilterChip('Price ↓', _selectedFilter == 'Price ↓'),
-                      ],
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: 6, // Number of filter items
+                      itemBuilder: (context, index) {
+                        // Generate chip based on index
+                        final filters = ['All', 'For Sale', 'For Rent', 'Furnished', 'Newest', 'Price ↓'];
+                        return _buildFilterChip(
+                          filters[index], 
+                          _selectedFilter == filters[index]
+                        );
+                      },
                     ),
                   ),
                 
                 // Curved bottom edge with shadow effect
                 Container(
-                  height: 20, // Increased height for more pronounced curve
+                  height: 16, // Slightly reduced height
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
@@ -155,35 +162,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  // Updated filter chip with better styling
+  // Updated filter chip with more consistent sizing
   Widget _buildFilterChip(String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () => _updateFilter(label),
-      child: Container(
-        margin: const EdgeInsets.only(right: 10, top: 4, bottom: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+    return Container(
+      margin: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
+      width: label.length > 6 ? 90 : 70, // Fixed width based on label length
+      child: GestureDetector(
+        onTap: () => _updateFilter(label),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Reduced horizontal padding
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? Colors.white : Colors.white.withOpacity(0.3),
+              width: 1,
             ),
-          ] : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? AppColors.lightColorScheme.primary : Colors.white,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
-            letterSpacing: 0.2, // Improved typography
+          ),
+          alignment: Alignment.center, // Center the text
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? AppColors.lightColorScheme.primary : Colors.white,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 12, // Smaller text
+            ),
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center, // Center text alignment
           ),
         ),
       ),
@@ -448,7 +453,7 @@ final LatLng position = property.latitude != null && property.longitude != null
             ),
             child: Center(
               child: Text(
-                '\$${(property.price / 1000).round()}k',
+                '₹${(property.price / 1000).round()}k', // Changed $ to ₹
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -601,25 +606,46 @@ final LatLng position = property.latitude != null && property.longitude != null
     });
   }
 
-  void _showFilterBottomSheet() {
-    // Implement filter dialog/bottom sheet
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.95,
-        minChildSize: 0.5,
-        expand: false,
-        builder: (context, controller) {
-          return const FilterBottomSheet();
-        },
-      ),
-    );
-  }
+  // Method to show filter bottom sheet - make it use the new fixed version
+void _showFilterBottomSheet() {
+  debugPrint('🔧 HomeScreen: _showFilterBottomSheet called');
+  
+  // Show a temporary snackbar to confirm button press
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Opening filters...'),
+      duration: Duration(milliseconds: 500),
+    ),
+  );
+  
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent, // Make transparent for proper rounding
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      debugPrint('🔧 HomeScreen: Building filter bottom sheet');
+      return SafeArea(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.8,
+          maxChildSize: 0.9,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (context, scrollController) {
+            return FixedFilterBottomSheet(
+              scrollController: scrollController,
+              onApply: (filters) {
+                debugPrint('📋 Filter applied: $filters');
+              },
+            );
+          },
+        ),
+      );
+    },
+  );
+}
 
   void _handleSearch(String query) {
     // Handle search functionality
@@ -639,6 +665,27 @@ final LatLng position = property.latitude != null && property.longitude != null
       RouteNames.propertyDetail,
       arguments: id,
     );
+  }
+
+  // Add a debug method for validating measurements
+  void _logDebugInfo() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+        if (renderBox != null) {
+          final size = renderBox.size;
+          debugPrint('HomeScreen size: ${size.width} x ${size.height}');
+        }
+        
+        // Log device info
+        debugPrint('Device pixel ratio: ${MediaQuery.of(context).devicePixelRatio}');
+        debugPrint('Screen size: ${MediaQuery.of(context).size.width} x ${MediaQuery.of(context).size.height}');
+        debugPrint('Padding: ${MediaQuery.of(context).padding}');
+        debugPrint('View insets: ${MediaQuery.of(context).viewInsets}');
+      } catch (e) {
+        debugPrint('Error getting debug info: $e');
+      }
+    });
   }
 }
 
@@ -907,6 +954,288 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       controlAffinity: ListTileControlAffinity.leading,
       activeColor: AppColors.lightColorScheme.primary,
       contentPadding: EdgeInsets.zero,
+    );
+  }
+}
+
+// New fixed filter bottom sheet class
+class FixedFilterBottomSheet extends StatefulWidget {
+  final ScrollController scrollController;
+  final Function(Map<String, dynamic>)? onApply;
+  
+  const FixedFilterBottomSheet({
+    Key? key,
+    required this.scrollController,
+    this.onApply,
+  }) : super(key: key);
+
+  @override
+  State<FixedFilterBottomSheet> createState() => _FixedFilterBottomSheetState();
+}
+
+class _FixedFilterBottomSheetState extends State<FixedFilterBottomSheet> {
+  RangeValues _priceRange = const RangeValues(100000, 1000000);
+  int _bedrooms = 0;
+  int _bathrooms = 0;
+  String _propertyType = 'Any';
+  bool _hasParking = false;
+  bool _hasPool = false;
+  bool _hasPets = false;
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('🔍 Building FixedFilterBottomSheet');
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: ListView(
+        controller: widget.scrollController,
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Header
+          const Center(
+            child: Text(
+              'Filter Properties',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Price Range
+          const Text(
+            'Price Range',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 4.0,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0),
+            ),
+            child: RangeSlider(
+              values: _priceRange,
+              min: 0,
+              max: 2000000,
+              divisions: 20,
+              activeColor: AppColors.lightColorScheme.primary,
+              inactiveColor: Colors.grey[300],
+              labels: RangeLabels(
+                '₹${(_priceRange.start/1000).round()}k', // Fixed display
+                '₹${(_priceRange.end/1000).round()}k', // Fixed display
+              ),
+              onChanged: (values) {
+                setState(() => _priceRange = values);
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('₹${(_priceRange.start/1000).round()}k'),
+                Text('₹${(_priceRange.end/1000).round()}k'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Bedrooms & Bathrooms - Fixed with SizedBox width constraints
+          const Text(
+            'Bedrooms',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold, 
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 60,
+                  margin: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(index.toString()),
+                    selected: _bedrooms == index,
+                    onSelected: (_) => setState(() => _bedrooms = index),
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _bedrooms == index ? AppColors.lightColorScheme.primary : Colors.black87,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          const Text(
+            'Bathrooms',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold, 
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 60,
+                  margin: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(index.toString()),
+                    selected: _bathrooms == index,
+                    onSelected: (_) => setState(() => _bathrooms = index),
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _bathrooms == index ? AppColors.lightColorScheme.primary : Colors.black87,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+
+          // Property Type
+          const Text(
+            'Property Type',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              'Any', 'House', 'Apartment', 'Condo', 'Townhouse', 'Land', 'Commercial'
+            ].map((type) => SizedBox(
+              width: (screenWidth - 56) / 3, // 3 items per row with padding
+              child: FilterChip(
+                label: Text(type),
+                selected: _propertyType == type,
+                onSelected: (_) => setState(() => _propertyType = type),
+                labelStyle: TextStyle(
+                  color: _propertyType == type 
+                      ? AppColors.lightColorScheme.primary
+                      : Colors.black87,
+                ),
+                selectedColor: AppColors.lightColorScheme.primary.withOpacity(0.1),
+              ),
+            )).toList(),
+          ),
+          
+          const SizedBox(height: 24),
+
+          // Amenities
+          const Text(
+            'Amenities',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          CheckboxListTile(
+            title: const Text('Parking Available'),
+            value: _hasParking,
+            onChanged: (value) => setState(() => _hasParking = value ?? false),
+            activeColor: AppColors.lightColorScheme.primary,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+          CheckboxListTile(
+            title: const Text('Swimming Pool'),
+            value: _hasPool,
+            onChanged: (value) => setState(() => _hasPool = value ?? false),
+            activeColor: AppColors.lightColorScheme.primary,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+          CheckboxListTile(
+            title: const Text('Pet Friendly'),
+            value: _hasPets,
+            onChanged: (value) => setState(() => _hasPets = value ?? false),
+            activeColor: AppColors.lightColorScheme.primary,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+          
+          const SizedBox(height: 32),
+
+          // Apply Button
+          ElevatedButton(
+            onPressed: () {
+              debugPrint('🔍 Filter apply button pressed');
+              final filters = {
+                'minPrice': _priceRange.start,
+                'maxPrice': _priceRange.end,
+                'bedrooms': _bedrooms,
+                'bathrooms': _bathrooms,
+                'propertyType': _propertyType,
+                'hasParking': _hasParking,
+                'hasPool': _hasPool,
+                'hasPets': _hasPets,
+              };
+              
+              if (widget.onApply != null) {
+                widget.onApply!(filters);
+              }
+              
+              Navigator.pop(context, filters);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.lightColorScheme.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Apply Filters',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 }

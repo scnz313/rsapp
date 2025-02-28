@@ -15,70 +15,71 @@ class SearchFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('⚡ SearchFilterBar: Building widget');
+    
     return Container(
-      height: 50,
+      height: 48, // Increased for better touch target
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[300]!,
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 2),
             blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          const SizedBox(width: 12),
-          Icon(
-            Icons.search_rounded,
-            color: AppColors.lightColorScheme.primary,
-            size: 24,
+          // Search icon
+          const Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Icon(
+              Icons.search_rounded,
+              color: Colors.grey,
+              size: 20,
+            ),
           ),
-          const SizedBox(width: 8),
+          
+          // Text field
           Expanded(
             child: TextField(
               controller: controller,
               decoration: const InputDecoration(
-                hintText: 'Search properties, locations...',
+                hintText: 'Search properties...',
                 border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 12),
-                isDense: true,
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
               ),
-              style: const TextStyle(
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontSize: 15),
               textInputAction: TextInputAction.search,
-              onSubmitted: onSearchSubmitted,
+              onSubmitted: (value) {
+                debugPrint('🔍 SearchFilterBar: Search submitted: $value');
+                onSearchSubmitted(value);
+              },
             ),
           ),
-          Container(
-            height: 36,
-            width: 1,
-            color: Colors.grey[300],
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-          ),
+          
+          // Filter button - Made much more prominent
           Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(24),
-            child: IconButton(
-              icon: Icon(
-                Icons.tune_rounded,
-                color: AppColors.lightColorScheme.primary,
+            color: AppColors.lightColorScheme.primary,
+            borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+            child: InkWell(
+              onTap: () {
+                debugPrint('🔴 SearchFilterBar: Filter button tapped');
+                onFilterTap();
+              },
+              borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                height: 48, // Same as parent for full height
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
-              onPressed: onFilterTap,
-              splashRadius: 24,
             ),
           ),
         ],

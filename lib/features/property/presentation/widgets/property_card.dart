@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/features/property/data/models/property_model.dart';
 import '/features/property/presentation/widgets/favorite_button.dart';
+import 'package:azharapp/core/constants/app_colors.dart'; // Import AppColors
 
 class PropertyCard extends StatelessWidget {
   final PropertyModel property;
@@ -22,6 +23,17 @@ class PropertyCard extends StatelessWidget {
       return _buildGridItem(context);
     }
     return _buildListItem(context);
+  }
+
+  String _formatPrice(double price) {
+    if (price >= 10000000) {
+      return '₹${(price / 10000000).toStringAsFixed(2)} Cr';
+    } else if (price >= 100000) {
+      return '₹${(price / 100000).toStringAsFixed(1)} Lac';
+    } else if (price >= 1000) {
+      return '₹${(price / 1000).round()}k';
+    }
+    return '₹${price.toInt()}';
   }
 
   Widget _buildGridItem(BuildContext context) {
@@ -59,10 +71,12 @@ class PropertyCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '\$${property.price.toStringAsFixed(0)}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        _formatPrice(property.price),
+                        style: TextStyle(
+                          fontSize: isGridItem ? 16 : 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -97,7 +111,7 @@ class PropertyCard extends StatelessWidget {
                           _buildFeatureItem(Icons.square_foot, '${property.area.toInt()}'),
                         ],
                       ),
-                    ],
+                    ]
                   ),
                 ),
               ],
@@ -175,10 +189,12 @@ class PropertyCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '\$${property.price.toStringAsFixed(0)}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          _formatPrice(property.price),
+                          style: TextStyle(
+                            fontSize: isGridItem ? 16 : 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.lightColorScheme.primary,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Row(
