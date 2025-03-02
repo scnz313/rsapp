@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/exceptions/auth_exception.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/utils/dev_utils.dart'; // Import the dev utils
 import '../../data/auth_service.dart';
 import '../../domain/enums/auth_status.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 // Simplified AuthState class
 class AuthState {
@@ -44,6 +47,8 @@ class AuthProvider extends ChangeNotifier {
 
   final AuthService _authService = AuthService();
   AuthState _state = const AuthState();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   // Getters
   AuthStatus get status => _state.status;
@@ -123,7 +128,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // Sign in method - modified for dev mode
-  Future<bool> signIn(String email, String password, BuildContext context) async {
+  Future<bool> signIn(String email, String password, BuildContext context, {bool rememberMe = false}) async {
     _state = _state.copyWith(isLoading: true, error: null);
     notifyListeners();
 
@@ -299,5 +304,104 @@ class AuthProvider extends ChangeNotifier {
       return DevUtils.devUserId;
     }
     return user?.uid;
+  }
+
+  // Save user info to shared preferences
+  Future<void> _saveUserToPrefs(User user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_uid', user.uid);
+      await prefs.setString('user_email', user.email ?? '');
+      await prefs.setString('user_name', user.displayName ?? '');
+      await prefs.setString('user_photo', user.photoURL ?? '');
+      await prefs.setBool('user_is_admin', _state.isAdmin);
+      await prefs.setString('user_role', _state.isAdmin ? 'Admin' : 'User');
+    } catch (e) {
+      debugPrint('Error saving user to prefs: $e');
+    }
+  }
+
+  // Clear user info from shared preferences
+  Future<void> _clearUserFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_uid');
+      await prefs.remove('user_email');
+      await prefs.remove('user_name');
+      await prefs.remove('user_photo');
+      await prefs.remove('user_is_admin');
+      await prefs.remove('user_role');
+    } catch (e) {
+      debugPrint('Error clearing user from prefs: $e');
+    }
+  }
+
+  // Make sure signInWithGoogle is properly defined to match the call from login_screen.dart
+  Future<User?> signInWithGoogle(BuildContext context) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+    
+    try {
+      // Initialize Google Sign-In
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      
+      // If user canceled the sign-in flow
+      if (googleUser == null) {
+        _state = _state.copyWith(isLoading: false);
+        notifyListeners();
+        return null;
+      }
+      
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
+      // Create credential
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      
+      // Sign in with Firebase
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      _state = _state.copyWith(user: userCredential.user);
+      
+      // Check if this is a new user
+      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+      
+      if (isNewUser && _state.user != null) {
+        // Create user document in Firestore for new users
+        await _firestore.collection('users').doc(_state.user!.uid).set({
+          'email': _state.user!.email,
+          'displayName': _state.user!.displayName ?? '',
+          'photoURL': _state.user!.photoURL ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+          'lastActive': FieldValue.serverTimestamp(),
+          'provider': 'google',
+          'role': 'user',
+        });
+      } else if (_state.user != null) {
+        // Update last login for existing users
+        await _firestore.collection('users').doc(_state.user!.uid).update({
+          'lastActive': FieldValue.serverTimestamp(),
+        });
+      }
+      
+      _state = _state.copyWith(status: AuthStatus.authenticated);
+      await _fetchUserData(); // Get additional user data
+      
+      _state = _state.copyWith(error: null, isLoading: false);
+      notifyListeners();
+      
+      return _state.user;
+    } catch (e) {
+      _state = _state.copyWith(error: e.toString(), status: AuthStatus.error, isLoading: false);
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<void> _fetchUserData() async {
+    // ... existing code ...
   }
 }

@@ -1,90 +1,102 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 
+/// Model class for user data in admin dashboard
 class AdminUser {
   final String uid;
   final String email;
-  final String? displayName;
+  final String displayName;
   final String? photoURL;
   final bool isAdmin;
-  final String status;
-  final DateTime createdAt;
-  final DateTime? lastLogin;
-  final Map<String, dynamic>? metadata;
-  
-  AdminUser({
+  final String status; // Add status field
+  final Timestamp? lastActive;
+  final Timestamp? createdAt;
+
+  const AdminUser({
     required this.uid,
     required this.email,
-    this.displayName,
+    required this.displayName,
     this.photoURL,
-    this.isAdmin = false,
-    this.status = 'active',
-    required this.createdAt,
-    this.lastLogin,
-    this.metadata,
+    required this.isAdmin,
+    this.status = 'active', // Default status
+    this.lastActive,
+    this.createdAt,
   });
-  
-  factory AdminUser.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    
-    final createdAtTimestamp = data['createdAt'] as Timestamp?;
-    final lastLoginTimestamp = data['lastLogin'] as Timestamp?;
-    
-    return AdminUser(
-      uid: doc.id,
-      email: data['email'] ?? '',
-      displayName: data['displayName'],
-      photoURL: data['photoURL'],
-      isAdmin: data['role'] == 'admin',
-      status: data['status'] ?? 'active',
-      createdAt: createdAtTimestamp?.toDate() ?? DateTime.now(),
-      lastLogin: lastLoginTimestamp?.toDate(),
-      metadata: data['metadata'] as Map<String, dynamic>?,
-    );
+
+  // Add joinDate getter
+  String get joinDate {
+    if (createdAt == null) return 'Unknown';
+    try {
+      final date = createdAt!.toDate();
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
-  
-  Map<String, dynamic> toMap() {
-    return {
-      'email': email,
-      'displayName': displayName,
-      'photoURL': photoURL,
-      'role': isAdmin ? 'admin' : 'user',
-      'status': status,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'lastLogin': lastLogin != null ? Timestamp.fromDate(lastLogin!) : null,
-      'metadata': metadata,
-    };
-  }
-  
-  // For CSV export
+
+  // Add toCsvRow method
   List<String> toCsvRow() {
     return [
       uid,
       email,
-      displayName ?? '',
+      displayName,
       isAdmin ? 'Admin' : 'User',
       status,
-      DateFormat('yyyy-MM-dd').format(createdAt),
-      lastLogin != null ? DateFormat('yyyy-MM-dd').format(lastLogin!) : '',
+      joinDate,
+      lastActive != null ? lastActive!.toDate().toString() : 'Never'
     ];
   }
-  
-  // For display in UI
-  String get joinDate => DateFormat('MMM d, yyyy').format(createdAt);
-  
-  String get lastLoginFormatted => 
-      lastLogin != null ? DateFormat('MMM d, yyyy').format(lastLogin!) : 'Never';
-  
+
+  // Add fromFirestore factory constructor
+  factory AdminUser.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    return AdminUser(
+      uid: doc.id,
+      email: data['email'] ?? '',
+      displayName: data['displayName'] ?? '',
+      photoURL: data['photoURL'],
+      isAdmin: data['role'] == 'admin',
+      status: data['status'] ?? 'active',
+      lastActive: data['lastActive'] as Timestamp?,
+      createdAt: data['createdAt'] as Timestamp?,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': uid,
+      'email': email,
+      'displayName': displayName,
+      'photoURL': photoURL,
+      'isAdmin': isAdmin,
+      'status': status,
+      'lastActive': lastActive,
+      'createdAt': createdAt,
+    };
+  }
+
+  factory AdminUser.fromMap(Map<String, dynamic> map) {
+    return AdminUser(
+      uid: map['uid'] ?? '',
+      email: map['email'] ?? '',
+      displayName: map['displayName'] ?? '',
+      photoURL: map['photoURL'],
+      isAdmin: map['isAdmin'] ?? false,
+      status: map['status'] ?? 'active',
+      lastActive: map['lastActive'],
+      createdAt: map['createdAt'],
+    );
+  }
+
   AdminUser copyWith({
     String? uid,
     String? email,
     String? displayName,
     String? photoURL,
     bool? isAdmin,
-    String? status,
-    DateTime? createdAt,
-    DateTime? lastLogin,
-    Map<String, dynamic>? metadata,
+    String? status, // Add status to copyWith
+    Timestamp? lastActive,
+    Timestamp? createdAt,
   }) {
     return AdminUser(
       uid: uid ?? this.uid,
@@ -92,10 +104,9 @@ class AdminUser {
       displayName: displayName ?? this.displayName,
       photoURL: photoURL ?? this.photoURL,
       isAdmin: isAdmin ?? this.isAdmin,
-      status: status ?? this.status,
+      status: status ?? this.status, // Use the new status
+      lastActive: lastActive ?? this.lastActive,
       createdAt: createdAt ?? this.createdAt,
-      lastLogin: lastLogin ?? this.lastLogin,
-      metadata: metadata ?? this.metadata,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/admin_provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../models/admin_user.dart';
@@ -20,11 +21,16 @@ class UserDataTable extends StatefulWidget {
 
 class _UserDataTableState extends State<UserDataTable> {
   List<bool> _selected = [];
+  int _sortColumnIndex = 0;
+  bool _sortAscending = true;
+  List<AdminUser> _sortedUsers = [];
   
   @override
   void initState() {
     super.initState();
     _selected = List.generate(widget.users.length, (index) => false);
+    _sortedUsers = List.from(widget.users);
+    _sortUsers();
   }
   
   @override
@@ -32,6 +38,8 @@ class _UserDataTableState extends State<UserDataTable> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.users.length != widget.users.length) {
       _selected = List.generate(widget.users.length, (index) => false);
+      _sortedUsers = List.from(widget.users);
+      _sortUsers();
     }
   }
   
@@ -42,6 +50,51 @@ class _UserDataTableState extends State<UserDataTable> {
     setState(() {
       _selected = List.generate(widget.users.length, (index) => value);
     });
+  }
+  
+  void _sortUsers() {
+    _sortedUsers.sort((a, b) {
+      switch (_sortColumnIndex) {
+        case 0: // Name
+          return _sortAscending
+              ? a.displayName.compareTo(b.displayName)
+              : b.displayName.compareTo(a.displayName);
+        case 1: // Email
+          return _sortAscending
+              ? a.email.compareTo(b.email)
+              : b.email.compareTo(a.email);
+        case 2: // Last Active
+          if (a.lastActive == null) return _sortAscending ? 1 : -1;
+          if (b.lastActive == null) return _sortAscending ? -1 : 1;
+          return _sortAscending
+              ? a.lastActive!.compareTo(b.lastActive!)
+              : b.lastActive!.compareTo(a.lastActive!);
+        case 3: // Admin
+          return _sortAscending
+              ? (a.isAdmin ? 1 : 0).compareTo(b.isAdmin ? 1 : 0)
+              : (b.isAdmin ? 1 : 0).compareTo(a.isAdmin ? 1 : 0);
+        default:
+          return 0;
+      }
+    });
+  }
+
+  void _sort<T>(int columnIndex, bool ascending) {
+    setState(() {
+      _sortColumnIndex = columnIndex;
+      _sortAscending = ascending;
+      _sortUsers();
+    });
+  }
+
+  String _formatTimestamp(dynamic timestamp) {
+    if (timestamp == null) return 'Never';
+    try {
+      final dateTime = timestamp.toDate();
+      return DateFormat('MMM d, y h:mm a').format(dateTime);
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
   
   @override
@@ -61,10 +114,12 @@ class _UserDataTableState extends State<UserDataTable> {
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 child: DataTable(
-                  columns: _buildColumns(),
-                  rows: _buildRows(),
+                  sortColumnIndex: _sortColumnIndex,
+                  sortAscending: _sortAscending,
                   columnSpacing: 24,
                   dataRowMinHeight: 60,
+                  columns: _buildColumns(),
+                  rows: _buildRows(),
                   showCheckboxColumn: true,
                 ),
               ),
@@ -147,9 +202,22 @@ class _UserDataTableState extends State<UserDataTable> {
           onChanged: _toggleAll,
         ),
       ),
-      const DataColumn(label: Text('Name')),
-      const DataColumn(label: Text('Email')),
-      const DataColumn(label: Text('Role')),
+      DataColumn(
+        label: const Text('Name'),
+        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
+      ),
+      DataColumn(
+        label: const Text('Email'),
+        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
+      ),
+      DataColumn(
+        label: const Text('Last Active'),
+        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
+      ),
+      DataColumn(
+        label: const Text('Admin'),
+        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
+      ),
       const DataColumn(label: Text('Status')),
       const DataColumn(label: Text('Join Date')),
       const DataColumn(label: Text('Actions')),
@@ -158,9 +226,9 @@ class _UserDataTableState extends State<UserDataTable> {
   
   List<DataRow> _buildRows() {
     return List.generate(
-      widget.users.length,
+      _sortedUsers.length,
       (index) {
-        final user = widget.users[index];
+        final user = _sortedUsers[index];
         
         return DataRow(
           selected: _selected[index],
@@ -184,14 +252,48 @@ class _UserDataTableState extends State<UserDataTable> {
                 },
               ),
             ),
-            DataCell(Text(user.displayName ?? 'N/A')),
-            DataCell(Text(user.email)),
             DataCell(
-              Switch(
-                value: user.isAdmin,
-                onChanged: (value) => widget.onRoleChanged(user, value),
-                activeColor: AppColors.lightColorScheme.primary,
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundImage: user.photoURL != null
+                        ? NetworkImage(user.photoURL!)
+                        : null,
+                    child: user.photoURL == null
+                        ? Text(user.displayName.isNotEmpty
+                            ? user.displayName[0].toUpperCase()
+                            : '?')
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      user.displayName.isNotEmpty
+                          ? user.displayName
+                          : 'No Name',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            DataCell(Text(user.email)),
+            DataCell(Text(_formatTimestamp(user.lastActive))),
+            DataCell(
+              user.isAdmin
+                  ? const Chip(
+                      label: Text(
+                        'Admin',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.zero,
+                    )
+                  : const Text('User'),
             ),
             DataCell(_buildStatusBadge(user.status)),
             DataCell(Text(user.joinDate)),
@@ -216,6 +318,36 @@ class _UserDataTableState extends State<UserDataTable> {
                       _toggleUserStatus(user);
                     },
                     tooltip: user.status == 'active' ? 'Disable' : 'Enable',
+                  ),
+                  Switch(
+                    value: user.isAdmin,
+                    onChanged: (value) {
+                      // Show confirmation dialog
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(value ? 'Grant Admin Access' : 'Revoke Admin Access'),
+                          content: Text(
+                            value
+                                ? 'Are you sure you want to grant admin access to ${user.displayName}?'
+                                : 'Are you sure you want to revoke admin access from ${user.displayName}?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                widget.onRoleChanged(user, value);
+                              },
+                              child: const Text('Confirm'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

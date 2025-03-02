@@ -325,7 +325,7 @@ class DashboardScreen extends StatelessWidget {
             SizedBox(
               height: 350,
               child: AuditLogList(
-                logs: provider.auditLogs,
+                logs: provider.auditLogs.map((log) => log.toMapWithId()).toList(),
                 showHeader: false,
                 onRefresh: provider.refreshAuditLogs,
               ),

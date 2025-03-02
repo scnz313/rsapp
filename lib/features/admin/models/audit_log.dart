@@ -67,6 +67,22 @@ class AuditLog {
         return action.replaceAll('_', ' ').capitalize();
     }
   }
+
+  // Convert AuditLog list to Map list
+  static List<Map<String, dynamic>> listToMapList(List<AuditLog> logs) {
+    return logs.map((log) => log.toMap()).toList();
+  }
+
+  // Convert this instance to a Map with id included
+  Map<String, dynamic> toMapWithId() {
+    final map = toMap();
+    map['id'] = id;
+    // Ensure timestamp is in the format expected by AuditLogList widget
+    if (map['timestamp'] is DateTime) {
+      map['timestamp'] = Timestamp.fromDate(map['timestamp'] as DateTime);
+    }
+    return map;
+  }
 }
 
 // Extension to capitalize strings

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/user_data_table.dart';
 import '../widgets/audit_log_list.dart';
-import '../../models/admin_user.dart'; // Add this import
+import '../../models/admin_user.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 
@@ -192,7 +192,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
           SizedBox(
             height: 400,
             child: AuditLogList(
-              logs: provider.activityLogs,
+              logs: provider.activityLogs.map((log) => log.toMapWithId()).toList(),
               showHeader: false,
             ),
           ),

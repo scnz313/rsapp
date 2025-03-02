@@ -1,7 +1,7 @@
+/// Enum representing the different authentication states
 enum AuthStatus {
   initial,
-  loading,
   authenticated,
   unauthenticated,
-  error
+  error,
 }

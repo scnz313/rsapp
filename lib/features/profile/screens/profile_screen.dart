@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/core/constants/app_colors.dart';
-import '/core/constants/app_styles.dart';
 import '/core/navigation/route_names.dart';
 import '/core/utils/snackbar_utils.dart';
 import '/features/favorites/providers/favorites_provider.dart';
 import '/core/theme/theme_provider.dart';
+import '../../../core/services/global_auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -55,12 +55,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Load user data from SharedPreferences
   Future<void> _loadUserData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     
     try {
       _prefs = await SharedPreferences.getInstance();
       
-      // Load user data or use defaults
+      if (!mounted) return;
       setState(() {
         _userData['name'] = _prefs.getString('user_name') ?? _userData['name'];
         _userData['email'] = _prefs.getString('user_email') ?? _userData['email'];
@@ -77,8 +78,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } catch (e) {
       debugPrint('Error loading user data: $e');
+      if (!mounted) return;
       SnackBarUtils.showErrorSnackBar(context, 'Failed to load user data');
     } finally {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -530,7 +533,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   
                   const SizedBox(height: 16),
                   
-                  // Apply Button
+                  // Apply Button with proper mounted checks
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -538,18 +541,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Save dark mode setting
                         await _prefs.setBool('settings_dark_mode', _isDarkMode);
                         
-                        // Apply the theme change
-                        if (context.mounted) {
-                          // Update theme provider
-                          final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-                          themeProvider.setDarkMode(_isDarkMode);
-                          
-                          Navigator.pop(context);
-                          SnackBarUtils.showSuccessSnackBar(
-                            context, 
-                            'Theme settings updated'
-                          );
-                        }
+                        if (!mounted) return; // Add mounted check
+                        
+                        // Update theme provider using correct method
+                        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+                        themeProvider.setTheme(_isDarkMode ? ThemeOption.dark : ThemeOption.light);
+                        
+                        if (!mounted) return; // Add mounted check
+                        
+                        Navigator.pop(context);
+                        SnackBarUtils.showSuccessSnackBar(
+                          context, 
+                          'Theme settings updated'
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.lightColorScheme.primary,
@@ -589,7 +593,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.of(context).pop();
                 _signOut();
               },
-              child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Sign Out'),
             ),
           ],
         );
@@ -998,12 +1005,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
   
   // Sign out implementation
-  void _signOut() {
+  Future<void> _signOut() async {
     debugPrint('ProfileScreen: Signing out');
-    SnackBarUtils.showSuccessSnackBar(context, 'Successfully signed out');
-    // In a real app, you would sign the user out here
+    setState(() => _isLoading = true);
+    
+    try {
+      final globalAuthService = GlobalAuthService();
+      await globalAuthService.signOut();
+      
+      if (!mounted) return;
+
+      // Use a better approach for navigation after sign out
+      // This ensures the Provider tree is properly recreated
+      if (Navigator.of(context).canPop()) {
+        // Use this approach if using Navigator
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          RouteNames.login, 
+          (route) => false,  // Remove all previous routes
+        );
+      } else {
+        // Alternative approach using replacement if needed
+        Navigator.of(context).pushReplacementNamed(RouteNames.login);
+      }
+      
+    } catch (e) {
+      debugPrint('Error signing out: $e');
+      if (!mounted) return;
+      
+      SnackBarUtils.showErrorSnackBar(
+        context, 
+        'Failed to sign out: ${e.toString()}'
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
-  
+
   // Format date utility
   String _formatDate(DateTime date) {
     return '${date.month}/${date.day}/${date.year}';

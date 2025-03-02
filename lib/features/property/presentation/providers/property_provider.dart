@@ -64,12 +64,18 @@ class PropertyProvider with ChangeNotifier {
   }
   
   Future<void> fetchProperties({Map<String, dynamic>? filters}) async {
-    _setLoading(true);
+    // Only set loading if not already fetching
+    if (!_isLoading) {
+      _setLoading(true); 
+    }
+    
     try {
-      _properties = await _repository.fetchProperties(filters: filters); // Changed from getProperties to fetchProperties
+      final properties = await _repository.fetchProperties(filters: filters);
+      _properties = properties;
       _error = null;
     } catch (e) {
       _error = e.toString();
+      DevUtils.log('Failed to fetch properties: $e');
     } finally {
       _setLoading(false);
     }

@@ -1,114 +1,66 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Model class for admin dashboard statistics
 class AdminStats {
   final int totalProperties;
+  final int activeProperties;
+  final int pendingProperties;
+  final int totalUsers;
   final int activeUsers;
   final int pendingReviews;
   final double totalRevenue;
-  final DateTime lastUpdated;
-  final Map<String, int> propertiesViewsByDay;
-  final Map<String, int> leadsGeneratedByDay;
-  final Map<String, int> userGrowthByMonth;
-  final Map<String, double> revenueByCategory;
+  final int inquiriesCount;
 
-  AdminStats({
-    this.totalProperties = 0,
-    this.activeUsers = 0,
-    this.pendingReviews = 0,
-    this.totalRevenue = 0.0,
-    DateTime? lastUpdated,
-    required this.propertiesViewsByDay,
-    required this.leadsGeneratedByDay,
-    required this.userGrowthByMonth,
-    required this.revenueByCategory,
-  }) : lastUpdated = lastUpdated ?? DateTime.now();
+  const AdminStats({
+    required this.totalProperties,
+    required this.activeProperties,
+    required this.pendingProperties,
+    required this.totalUsers,
+    required this.activeUsers,
+    required this.pendingReviews,
+    required this.totalRevenue,
+    required this.inquiriesCount,
+  });
 
-  factory AdminStats.fromJson(Map<String, dynamic> json) {
-    return AdminStats(
-      totalProperties: json['totalProperties'] ?? 0,
-      activeUsers: json['activeUsers'] ?? 0,
-      pendingReviews: json['pendingReviews'] ?? 0,
-      totalRevenue: (json['totalRevenue'] ?? 0).toDouble(),
-      lastUpdated: (json['lastUpdated'] as Timestamp?)?.toDate(),
-      propertiesViewsByDay: Map<String, int>.from(json['propertiesViewsByDay'] ?? {}),
-      leadsGeneratedByDay: Map<String, int>.from(json['leadsGeneratedByDay'] ?? {}),
-      userGrowthByMonth: Map<String, int>.from(json['userGrowthByMonth'] ?? {}),
-      revenueByCategory: Map<String, double>.from(json['revenueByCategory'] ?? {}),
-    );
-  }
-
+  // Factory constructor for empty stats
   factory AdminStats.empty() {
-    return AdminStats(
+    return const AdminStats(
       totalProperties: 0,
+      activeProperties: 0,
+      pendingProperties: 0,
+      totalUsers: 0,
       activeUsers: 0,
       pendingReviews: 0,
-      totalRevenue: 0.0,
-      propertiesViewsByDay: {},
-      leadsGeneratedByDay: {},
-      userGrowthByMonth: {},
-      revenueByCategory: {},
+      totalRevenue: 0,
+      inquiriesCount: 0,
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'totalProperties': totalProperties,
-      'activeUsers': activeUsers,
-      'pendingReviews': pendingReviews,
-      'totalRevenue': totalRevenue,
-      'lastUpdated': lastUpdated,
-      'propertiesViewsByDay': propertiesViewsByDay,
-      'leadsGeneratedByDay': leadsGeneratedByDay,
-      'userGrowthByMonth': userGrowthByMonth,
-      'revenueByCategory': revenueByCategory,
-    };
+  // Add the missing generateMockData method
+  factory AdminStats.generateMockData() {
+    return AdminStats(
+      totalProperties: 237,
+      activeProperties: 189,
+      pendingProperties: 14,
+      totalUsers: 512,
+      activeUsers: 325,
+      pendingReviews: 8,
+      totalRevenue: 45750.00,
+      inquiriesCount: 143,
+    );
   }
 
-  // Generate mock data for development
-  static AdminStats generateMockData() {
-    // Create date-based views/leads data for line chart (last 30 days)
-    final Map<String, int> mockViews = {};
-    final Map<String, int> mockLeads = {};
-    final DateTime now = DateTime.now();
-
-    for (int i = 29; i >= 0; i--) {
-      final date = now.subtract(Duration(days: i));
-      final dateString = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-
-      // Generate semi-random view counts (100-500)
-      mockViews[dateString] = 100 + (date.day * 7) % 400;
-
-      // Generate lead counts as ~10% of views
-      mockLeads[dateString] = (mockViews[dateString]! * 0.1).round();
-    }
-
-    // Create monthly user growth data for bar chart (last 12 months)
-    final Map<String, int> mockUserGrowth = {};
-
-    for (int i = 11; i >= 0; i--) {
-      final date = DateTime(now.year, now.month - i);
-      final monthString = '${date.year}-${date.month.toString().padLeft(2, '0')}';
-
-      // Generate semi-random user growth (20-100 new users per month)
-      mockUserGrowth[monthString] = 20 + (date.month * 5) % 80;
-    }
-
-    // Create revenue by category data for pie chart
-    final Map<String, double> mockRevenue = {
-      'Premium Listings': 5750.0,
-      'Featured Properties': 3200.0,
-      'Subscription Fees': 8500.0,
-    };
-
+  // Factory constructor from Firestore data
+  factory AdminStats.fromMap(Map<String, dynamic> map) {
     return AdminStats(
-      totalProperties: 0,
-      activeUsers: 0,
-      pendingReviews: 0,
-      totalRevenue: 0.0,
-      propertiesViewsByDay: mockViews,
-      leadsGeneratedByDay: mockLeads,
-      userGrowthByMonth: mockUserGrowth,
-      revenueByCategory: mockRevenue,
+      totalProperties: map['totalProperties'] ?? 0,
+      activeProperties: map['activeProperties'] ?? 0,
+      pendingProperties: map['pendingProperties'] ?? 0,
+      totalUsers: map['totalUsers'] ?? 0,
+      activeUsers: map['activeUsers'] ?? 0,
+      pendingReviews: map['pendingReviews'] ?? 0,
+      totalRevenue: (map['totalRevenue'] ?? 0).toDouble(),
+      inquiriesCount: map['inquiriesCount'] ?? 0,
     );
   }
 }

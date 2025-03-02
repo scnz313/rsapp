@@ -482,6 +482,12 @@
       "languageVersion": "3.5"
     },
     {
+      "name": "flutter_riverpod",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/flutter_riverpod-2.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "flutter_svg",
       "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/flutter_svg-2.0.17",
       "packageUri": "lib/",
@@ -600,6 +606,42 @@
       "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_fonts-6.2.1",
       "packageUri": "lib/",
       "languageVersion": "2.14"
+    },
+    {
+      "name": "google_identity_services_web",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_identity_services_web-0.3.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "google_sign_in",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_sign_in-6.2.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "google_sign_in_android",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_sign_in_android-6.1.35",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "google_sign_in_ios",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_sign_in_ios-5.8.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "google_sign_in_platform_interface",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_sign_in_platform_interface-2.4.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
+      "name": "google_sign_in_web",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/google_sign_in_web-0.12.4+3",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
     },
     {
       "name": "graphs",
@@ -974,6 +1016,12 @@
       "languageVersion": "3.6"
     },
     {
+      "name": "riverpod",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/riverpod-2.6.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "rxdart",
       "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/rxdart-0.28.0",
       "packageUri": "lib/",
@@ -1104,6 +1152,12 @@
       "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/stack_trace-1.12.1",
       "packageUri": "lib/",
       "languageVersion": "3.4"
+    },
+    {
+      "name": "state_notifier",
+      "rootUri": "file:///Users/hashi/.pub-cache/hosted/pub.dev/state_notifier-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "stream_channel",
@@ -1310,7 +1364,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-02-28T09:31:44.490220Z",
+  "generated": "2025-03-02T18:17:24.345462Z",
   "generator": "pub",
   "generatorVersion": "3.7.0",
   "flutterRoot": "file:///Users/hashi/development/flutter",

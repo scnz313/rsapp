@@ -72,6 +72,9 @@ dependencies:
   # App restart utility
   flutter_phoenix: ^1.1.1
   markdown_editor_plus: ^0.2.15
+  google_sign_in: ^6.2.2
+  flutter_riverpod: ^2.6.1
+   # Keep only this one
 
 dev_dependencies:
   flutter_test:

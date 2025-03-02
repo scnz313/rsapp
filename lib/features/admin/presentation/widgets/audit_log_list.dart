@@ -1,23 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/admin_provider.dart';
 import '../../models/audit_log.dart';
 
 class AuditLogList extends StatelessWidget {
-  final List<AuditLog> logs;
+  final List<Map<String, dynamic>> logs;
   final bool showHeader;
   final bool enableSelection;
   final Function(List<AuditLog>)? onBulkAction;
-  final VoidCallback? onRefresh; // Add this parameter
-  
+  final VoidCallback? onRefresh;
+  final bool compact;
+
   const AuditLogList({
     Key? key,
     required this.logs,
     this.showHeader = true,
     this.enableSelection = false,
     this.onBulkAction,
-    this.onRefresh, // Add onRefresh parameter with default value
+    this.onRefresh,
+    this.compact = false,
   }) : super(key: key);
+
+  String _formatTimestamp(dynamic timestamp) {
+    if (timestamp == null) return 'Unknown';
+    try {
+      DateTime dateTime;
+      if (timestamp is Timestamp) {
+        dateTime = timestamp.toDate();
+      } else if (timestamp is DateTime) {
+        dateTime = timestamp;
+      } else {
+        return 'Invalid date';
+      }
+      
+      return DateFormat('MMM d, y h:mm a').format(dateTime);
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
+  Color _getActionColor(String action) {
+    switch (action.toLowerCase()) {
+      case 'create':
+        return Colors.green;
+      case 'update':
+        return Colors.blue;
+      case 'delete':
+        return Colors.red;
+      case 'login':
+        return Colors.purple;
+      case 'grant_admin':
+        return Colors.amber;
+      case 'revoke_admin':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getActionIcon(String action) {
+    switch (action.toLowerCase()) {
+      case 'create':
+        return Icons.add_circle_outline;
+      case 'update':
+        return Icons.edit_outlined;
+      case 'delete':
+        return Icons.delete_outline;
+      case 'login':
+        return Icons.login;
+      case 'grant_admin':
+        return Icons.admin_panel_settings;
+      case 'revoke_admin':
+        return Icons.no_accounts;
+      default:
+        return Icons.info_outline;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +87,7 @@ class AuditLogList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('No logs to display'),
-            if (onRefresh != null) // Optional refresh button
+            if (onRefresh != null)
               TextButton.icon(
                 icon: const Icon(Icons.refresh),
                 label: const Text('Refresh'),
@@ -37,159 +97,121 @@ class AuditLogList extends StatelessWidget {
         ),
       );
     }
-    
-    return RefreshIndicator(
-      onRefresh: () async {
-        if (onRefresh != null) {
-          onRefresh!();
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (showHeader)
-            _buildHeader(context),
-          Expanded(
-            child: ListView.builder(
-              itemCount: logs.length,
-              itemBuilder: (context, index) {
-                final log = logs[index];
-                return _buildLogItem(context, log);
-              },
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (showHeader) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'Activity Logs',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
+          const Divider(height: 1),
         ],
-      ),
-    );
-  }
-  
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Recent Activity Logs',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              final adminProvider = Provider.of<AdminProvider>(context, listen: false);
-              adminProvider.loadActivityLogs();
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: logs.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final log = logs[index];
+              final String action = log['action'] ?? 'unknown';
+              final String userId = log['userId'] ?? 'system';
+              final String details = log['details'] ?? 'No details provided';
+              final timestamp = log['timestamp'];
+              final String resourceType = log['resourceType'] ?? '';
+              final String resourceId = log['resourceId'] ?? '';
+              
+              return ListTile(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.0, 
+                  vertical: compact ? 4.0 : 8.0,
+                ),
+                leading: CircleAvatar(
+                  backgroundColor: _getActionColor(action).withOpacity(0.2),
+                  child: Icon(
+                    _getActionIcon(action),
+                    color: _getActionColor(action),
+                    size: compact ? 18 : 24,
+                  ),
+                ),
+                title: Text(
+                  compact 
+                    ? '$action ${resourceType.isNotEmpty ? "- $resourceType" : ""}'
+                    : action.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: compact ? 14 : 16,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!compact) 
+                      Text('By: $userId'),
+                    Text(
+                      details, 
+                      maxLines: compact ? 1 : 2, 
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: compact ? 12 : 14),
+                    ),
+                  ],
+                ),
+                trailing: Text(
+                  _formatTimestamp(timestamp),
+                  style: TextStyle(fontSize: compact ? 10 : 12),
+                ),
+                isThreeLine: !compact,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('${action.toUpperCase()} Log Details'),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Time: ${_formatTimestamp(timestamp)}'),
+                            const SizedBox(height: 8),
+                            Text('By: $userId'),
+                            if (resourceType.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text('Resource Type: $resourceType'),
+                            ],
+                            if (resourceId.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text('Resource ID: $resourceId'),
+                            ],
+                            const SizedBox(height: 8),
+                            Text('Details: $details'),
+                            const SizedBox(height: 8),
+                            ...log.entries
+                                .where((e) => !['action', 'userId', 'details', 'timestamp', 'resourceType', 'resourceId'].contains(e.key))
+                                .map((e) => Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Text('${e.key}: ${e.value}'),
+                                    )),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
             },
-            tooltip: 'Refresh logs',
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildLogItem(BuildContext context, AuditLog log) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8.0),
-      child: ExpansionTile(
-        leading: _getLogIcon(log.action),
-        title: Text(log.readableAction),
-        subtitle: Text(
-          '${log.formattedTimestamp} • ${_truncateUserId(log.userId)}',
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 12,
           ),
         ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailRow('User ID', log.userId),
-                _buildDetailRow('IP Address', log.ipAddress),
-                _buildDetailRow('Device', _getDeviceInfo(log.deviceInfo)),
-                _buildDetailRow('Platform', log.deviceInfo['platform'] ?? 'Unknown'),
-                _buildDetailRow('Action', log.action),
-              ],
-            ),
-          ),
-        ],
-      ),
+      ],
     );
-  }
-  
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              '$label:',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _getLogIcon(String action) {
-    IconData iconData;
-    Color iconColor;
-    
-    switch (action) {
-      case 'login':
-        iconData = Icons.login;
-        iconColor = Colors.blue;
-        break;
-      case '2fa_verification':
-        iconData = Icons.security;
-        iconColor = Colors.green;
-        break;
-      case 'property_create':
-        iconData = Icons.add_home;
-        iconColor = Colors.purple;
-        break;
-      case 'property_update':
-        iconData = Icons.edit;
-        iconColor = Colors.orange;
-        break;
-      case 'property_delete':
-        iconData = Icons.delete;
-        iconColor = Colors.red;
-        break;
-      default:
-        iconData = Icons.info;
-        iconColor = Colors.grey;
-    }
-    
-    return CircleAvatar(
-      backgroundColor: iconColor.withOpacity(0.2),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 20,
-      ),
-    );
-  }
-  
-  String _getDeviceInfo(Map<String, dynamic> deviceInfo) {
-    if (deviceInfo['model'] != null) {
-      return deviceInfo['model'];
-    }
-    return 'Unknown device';
-  }
-  
-  String _truncateUserId(String userId) {
-    if (userId.length <= 8) return userId;
-    return '${userId.substring(0, 4)}...${userId.substring(userId.length - 4)}';
   }
 }

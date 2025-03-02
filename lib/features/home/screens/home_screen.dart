@@ -12,7 +12,6 @@ import '/features/property/presentation/widgets/property_card.dart';
 import '/features/home/widgets/search_filter_bar.dart';
 import '/features/home/widgets/property_list_header.dart';
 import '/features/home/widgets/featured_properties_carousel.dart';
-import '/features/home/widgets/quick_filter_chips.dart';
 import '/core/navigation/route_names.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,30 +37,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    
-    // Refresh data when the screen first loads
-    _loadAllData(); 
-    
-    // Add debug logging
     debugPrint('🏠 HomeScreen: initState called');
     
+    // Use post-frame callback to avoid the setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setStatusBarColor();
-      _logDebugInfo(); // Add debug logging
+      _loadAllData();
     });
   }
-  
-  // New method to load all property data
+
   Future<void> _loadAllData() async {
-    final provider = Provider.of<PropertyProvider>(context, listen: false);
-    try {
-      await provider.fetchProperties();
-      await provider.fetchFeaturedProperties();
-      await provider.fetchRecentProperties(); // Add this to specifically load recent properties
-    } catch (e) {
-      debugPrint('Error loading property data: $e');
-    }
+    final propertyProvider = Provider.of<PropertyProvider>(context, listen: false);
+    if (!mounted) return;
+    await propertyProvider.fetchProperties();
+    // Other data loading methods...
   }
 
   @override
@@ -95,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     // Add debug logging
     debugPrint('Building HomeScreen - Screen width: ${MediaQuery.of(context).size.width}');
     
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -102,7 +92,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Refined header with better spacing and visual appeal
           Material(
             elevation: 2, // Slight elevation for better visual hierarchy
-            color: AppColors.lightColorScheme.primary,
+            color: isDarkMode 
+                ? Theme.of(context).scaffoldBackgroundColor 
+                : AppColors.lightColorScheme.primary,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -150,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withAlpha(13),
                         offset: const Offset(0, -2),
                         blurRadius: 4,
                         spreadRadius: -2,
@@ -186,10 +178,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Reduced horizontal padding
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+            color: isSelected ? Colors.white : Colors.white.withAlpha(51),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? Colors.white : Colors.white.withOpacity(0.3),
+              color: isSelected ? Colors.white : Colors.white.withAlpha(77),
               width: 1,
             ),
           ),
@@ -218,89 +210,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         });
       });
     }
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      height: 40, // Reduced from 44
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 12),
-          Icon(
-            Icons.search_rounded,
-            color: AppColors.lightColorScheme.primary,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Search properties...',
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 12),
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 15,
-                ),
-              ),
-              style: const TextStyle(fontSize: 15),
-              textInputAction: TextInputAction.search,
-              onSubmitted: _handleSearch,
-            ),
-          ),
-          Container(
-            height: 24,
-            width: 1,
-            color: Colors.grey[300],
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.tune_rounded,
-              color: AppColors.lightColorScheme.primary,
-              size: 20,
-            ),
-            onPressed: _showFilterBottomSheet,
-            padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(
-              minWidth: 32,
-              minHeight: 32,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        children: [
-          _buildFilterChip('All', _selectedFilter == 'All'),
-          _buildFilterChip('For Sale', _selectedFilter == 'For Sale'),
-          _buildFilterChip('For Rent', _selectedFilter == 'For Rent'),
-          _buildFilterChip('Furnished', _selectedFilter == 'Furnished'),
-          _buildFilterChip('Newest', _selectedFilter == 'Newest'),
-          _buildFilterChip('Price ↓', _selectedFilter == 'Price ↓'),
-        ],
-      ),
-    );
   }
 
   Widget _buildMainContent() {
@@ -416,12 +325,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 builder: (context, markers) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: AppColors.lightColorScheme.primary.withValues(
-                        alpha: (0.8 * 255).toDouble(), // Use withValues instead of withOpacity
-                        red: AppColors.lightColorScheme.primary.r.toDouble(), // Use .r instead of .red
-                        green: AppColors.lightColorScheme.primary.g.toDouble(), // Use .g instead of .green
-                        blue: AppColors.lightColorScheme.primary.b.toDouble(), // Use .b instead of .blue
-                      ),
+                      color: AppColors.lightColorScheme.primary.withAlpha(204),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -459,7 +363,7 @@ final LatLng position = property.latitude != null && property.longitude != null
               border: Border.all(color: Colors.white, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withAlpha(51),
                   blurRadius: 6,
                   offset: const Offset(0, 3),
                 ),
@@ -538,7 +442,7 @@ final LatLng position = property.latitude != null && property.longitude != null
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(25),
             blurRadius: 10,
             offset: const Offset(0, -1),
           ),
@@ -606,7 +510,7 @@ final LatLng position = property.latitude != null && property.longitude != null
           Container(
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.lightColorScheme.primary.withOpacity(0.1) : Colors.transparent,
+              color: isSelected ? AppColors.lightColorScheme.primary.withAlpha(25) : Colors.transparent,
               borderRadius: BorderRadius.circular(14.0),
             ),
             child: Icon(
@@ -964,12 +868,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       selected: isSelected,
       onSelected: (_) => onTap(),
       backgroundColor: Colors.grey[200],
-      selectedColor: AppColors.lightColorScheme.primary.withValues(
-        alpha: 51,  // 0.2 * 255
-        red: AppColors.lightColorScheme.primary.r.toDouble(),  // Use .r instead of .red
-        green: AppColors.lightColorScheme.primary.g.toDouble(), // Use .g instead of .green
-        blue: AppColors.lightColorScheme.primary.b.toDouble(), // Use .b instead of .blue
-      ),
+      selectedColor: AppColors.lightColorScheme.primary.withAlpha(51),
       labelStyle: TextStyle(
         color: isSelected 
             ? AppColors.lightColorScheme.primary
@@ -1020,10 +919,12 @@ class _FixedFilterBottomSheetState extends State<FixedFilterBottomSheet> {
     debugPrint('🔍 Building FixedFilterBottomSheet');
     final screenWidth = MediaQuery.of(context).size.width;
 
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Theme.of(context).cardColor : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: ListView(
         controller: widget.scrollController,
@@ -1043,12 +944,13 @@ class _FixedFilterBottomSheetState extends State<FixedFilterBottomSheet> {
           const SizedBox(height: 16),
 
           // Header
-          const Center(
+          Center(
             child: Text(
               'Filter Properties',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : null, // Use theme-aware colors
               ),
             ),
           ),
@@ -1187,7 +1089,7 @@ class _FixedFilterBottomSheetState extends State<FixedFilterBottomSheet> {
                       ? AppColors.lightColorScheme.primary
                       : Colors.black87,
                 ),
-                selectedColor: AppColors.lightColorScheme.primary.withOpacity(0.1),
+                selectedColor: AppColors.lightColorScheme.primary.withAlpha(51),
               ),
             )).toList(),
           ),

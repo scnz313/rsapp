@@ -195,6 +195,9 @@ class AppTheme {
         borderRadius: BorderRadius.circular(4),
       ),
     ),
+    extensions: [
+      AppThemeExtension.light,
+    ],
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
@@ -243,5 +246,53 @@ class AppTheme {
         ),
       ),
     ),
+    extensions: [
+      AppThemeExtension.dark,
+    ],
   );
+}
+
+class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
+  final Color? customColor1;
+  final Color? customColor2;
+
+  const AppThemeExtension({
+    required this.customColor1,
+    required this.customColor2,
+  });
+
+  static const light = AppThemeExtension(
+    customColor1: Colors.blue,
+    customColor2: Colors.grey,
+  );
+
+  static const dark = AppThemeExtension(
+    customColor1: Colors.lightBlue,
+    customColor2: Colors.blueGrey,
+  );
+
+  @override
+  ThemeExtension<AppThemeExtension> copyWith({
+    Color? customColor1,
+    Color? customColor2,
+  }) {
+    return AppThemeExtension(
+      customColor1: customColor1 ?? this.customColor1,
+      customColor2: customColor2 ?? this.customColor2,
+    );
+  }
+
+  @override
+  ThemeExtension<AppThemeExtension> lerp(
+    covariant ThemeExtension<AppThemeExtension>? other,
+    double t,
+  ) {
+    if (other is! AppThemeExtension) {
+      return this;
+    }
+    return AppThemeExtension(
+      customColor1: Color.lerp(customColor1, other.customColor1, t),
+      customColor2: Color.lerp(customColor2, other.customColor2, t),
+    );
+  }
 }

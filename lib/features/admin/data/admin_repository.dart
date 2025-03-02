@@ -59,7 +59,7 @@ class AdminRepository {
       
       if (searchQuery != null && searchQuery.isNotEmpty) {
         query = query.where('email', isGreaterThanOrEqualTo: searchQuery)
-                     .where('email', isLessThanOrEqualTo: searchQuery + '\uf8ff');
+                     .where('email', isLessThanOrEqualTo: '$searchQuery\uf8ff'); // Fix interpolation here
       }
       
       final snapshot = await query.get();

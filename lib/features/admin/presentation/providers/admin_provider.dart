@@ -7,11 +7,13 @@ import '../../models/admin_user.dart';
 import '../../models/admin_stats.dart';
 import '../../models/property_trend.dart';
 import '../../data/admin_repository.dart';
+import '../../../../firebase/firebase_admin_service.dart';
 
 class AdminProvider extends ChangeNotifier {
   final AdminRepository _repository = AdminRepository();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAdminService _adminService = FirebaseAdminService();
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -371,5 +373,15 @@ class AdminProvider extends ChangeNotifier {
         'description': 'The property address is incorrect. The actual location is different than stated.',
       },
     ];
+  }
+
+  // Add this method to your AdminProvider class
+  List<Map<String, dynamic>> getAuditLogsAsMaps() {
+    return _activityLogs.map((log) => log.toMapWithId()).toList();
+  }
+
+  // Similarly for dashboard audit logs
+  List<Map<String, dynamic>> getDashboardAuditLogsAsMaps() {
+    return _auditLogs.map((log) => log.toMapWithId()).toList();
   }
 }

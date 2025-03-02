@@ -17,7 +17,7 @@ class _PropertyListingScreenState extends State<PropertyListingScreen> {
   Map<String, dynamic> _filters = {};
   bool _isLoading = false;
   bool _isMounted = true;
-  List<PropertyModel> _properties = [];
+  final List<PropertyModel> _properties = [];
 
   @override
   void initState() {
@@ -213,7 +213,7 @@ class _PropertyListingScreenState extends State<PropertyListingScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PropertyDetailScreen(id: propertyId),
+        builder: (_) => PropertyDetailScreen(propertyId: propertyId),
       ),
     );
   }
