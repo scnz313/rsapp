@@ -13,6 +13,7 @@ import '/features/property/data/models/property_model.dart';
 import '/features/property/presentation/providers/property_provider.dart';
 import '/features/storage/providers/storage_provider.dart';
 import '/features/auth/presentation/providers/auth_provider.dart';
+import '/core/utils/dev_utils.dart';
 
 class PropertyUploadScreen extends StatefulWidget {
   final PropertyModel? propertyToEdit;
@@ -203,98 +204,114 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
       return;
     }
     
-    if (_imageFiles.isEmpty && _existingImages.isEmpty) {
-      SnackBarUtils.showErrorSnackBar(context, 'Please add at least one image');
-      return;
-    }
-    
     setState(() {
       _isUploading = true;
     });
     
     try {
-      final storageProvider = Provider.of<StorageProvider>(context, listen: false);
       final propertyProvider = Provider.of<PropertyProvider>(context, listen: false);
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
-      final userId = authProvider.user?.uid;
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
-      
-      // Upload new images
-      List<String> uploadedImageUrls = [];
-      if (_imageFiles.isNotEmpty) {
-        for (final imageFile in _imageFiles) {
-          final fileName = path.basename(imageFile.path);
-          final destination = 'properties/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-          
-          final downloadUrl = await storageProvider.uploadFile(
-            File(imageFile.path),
-            destination,
-          );
-          
-          uploadedImageUrls.add(downloadUrl);
+      // Get user ID - handle development mode
+      String userId;
+      if (DevUtils.isDev && DevUtils.bypassAuth) {
+        userId = DevUtils.devUserId;
+        DevUtils.log('Using dev user ID: $userId');
+      } else {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        userId = authProvider.user?.uid ?? '';
+        if (userId.isEmpty) {
+          throw Exception('User not logged in');
         }
       }
       
-      // Combine existing and new images
-      final allImages = [..._existingImages, ...uploadedImageUrls];
+      // Prepare images upload
+      List<String> allImages = [..._existingImages];
       
-      // Create property object
-      final property = PropertyModel(
-        id: widget.propertyToEdit?.id,
-        title: _titleController.text,
-        price: double.parse(_priceController.text),
-        location: _addressController.text,
-        description: _descriptionController.text,
-        bedrooms: int.parse(_bedroomsController.text),
-        bathrooms: int.parse(_bathroomsController.text),
-        area: double.parse(_areaController.text),
-        images: allImages,
-        latitude: _latitude,
-        longitude: _longitude,
-        createdAt: widget.propertyToEdit?.createdAt ?? DateTime.now(),
-        updatedAt: DateTime.now(),
-        type: PropertyType.house, // Default value
-        status: PropertyStatus.available, // Default value
-        propertyType: _propertyType,
-        listingType: _listingType,
-        ownerId: userId,
-      );
+      // Only try to upload new images if there are any
+      if (_imageFiles.isNotEmpty) {
+        try {
+          final storageProvider = Provider.of<StorageProvider>(context, listen: false);
+          List<String> uploadedImageUrls = [];
+          
+          // Upload each image with error handling
+          for (final imageFile in _imageFiles) {
+            try {
+              final fileName = path.basename(imageFile.path);
+              final destination = 'properties/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+              
+              final downloadUrl = await storageProvider.uploadFile(
+                File(imageFile.path),
+                destination,
+              );
+              
+              uploadedImageUrls.add(downloadUrl);
+            } catch (e) {
+              DevUtils.log('Error uploading image: $e');
+              if (DevUtils.isDev) {
+                // In dev mode, use a placeholder for failed uploads
+                uploadedImageUrls.add('https://via.placeholder.com/800x600?text=Upload+Failed');
+              } else {
+                // In production, rethrow
+                rethrow;
+              }
+            }
+          }
+          
+          allImages = [..._existingImages, ...uploadedImageUrls];
+        } catch (e) {
+          // In dev mode, continue with existing images
+          if (!DevUtils.isDev) {
+            rethrow;
+          }
+          DevUtils.log('Continuing with existing images only due to error: $e');
+          // Check if the widget is still mounted before using BuildContext
+          if (mounted) {
+            SnackBarUtils.showWarningSnackBar(context, 'Failed to upload images, using existing only');
+          }
+        }
+      }
+      
+      // Create property data map
+      final propertyData = {
+        'id': widget.propertyToEdit?.id,
+        'title': _titleController.text,
+        'price': double.parse(_priceController.text),
+        'location': _addressController.text,
+        'description': _descriptionController.text,
+        'bedrooms': int.parse(_bedroomsController.text),
+        'bathrooms': int.parse(_bathroomsController.text),
+        'area': double.parse(_areaController.text),
+        'images': allImages,
+        'latitude': _latitude,
+        'longitude': _longitude,
+        'createdAt': widget.propertyToEdit?.createdAt ?? DateTime.now(),
+        'updatedAt': DateTime.now(),
+        'type': PropertyType.house.toString().split('.').last, // Use enum value's string representation
+        'status': PropertyStatus.available.toString().split('.').last, // Use enum value's string representation
+        'propertyType': _propertyType,
+        'listingType': _listingType,
+        'ownerId': userId,
+      };
       
       // Save property
       if (widget.propertyToEdit != null && widget.propertyToEdit!.id != null) {
-        await propertyProvider.updateProperty(widget.propertyToEdit!.id!, property.toMap());
-        if (mounted) {
-          SnackBarUtils.showSuccessSnackBar(context, 'Property updated successfully');
-        }
+        await propertyProvider.updateProperty(widget.propertyToEdit!.id!, propertyData);
       } else {
-        await propertyProvider.createProperty(property.toMap());
-        if (mounted) {
-          SnackBarUtils.showSuccessSnackBar(context, 'Property added successfully');
-        }
+        await propertyProvider.addNewProperty(propertyData);
       }
       
-      // Clear form
-      if (mounted && widget.propertyToEdit == null) {
-        _titleController.clear();
-        _priceController.clear();
-        _addressController.clear();
-        _descriptionController.clear();
-        _bedroomsController.clear();
-        _bathroomsController.clear();
-        _areaController.clear();
-        setState(() {
-          _imageFiles = [];
-          _existingImages = [];
-          _latitude = null;
-          _longitude = null;
-        });
-      }
-      
-      // Navigate back
       if (mounted) {
+        SnackBarUtils.showSuccessSnackBar(
+          context, 
+          widget.propertyToEdit != null ? 'Property updated successfully' : 'Property added successfully'
+        );
+        
+        // Clear form
+        if (widget.propertyToEdit == null) {
+          _clearForm();
+        }
+        
+        // Navigate back
         Navigator.pop(context);
       }
     } catch (e) {
@@ -308,6 +325,22 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
         });
       }
     }
+  }
+
+  void _clearForm() {
+    _titleController.clear();
+    _priceController.clear();
+    _addressController.clear();
+    _descriptionController.clear();
+    _bedroomsController.clear();
+    _bathroomsController.clear();
+    _areaController.clear();
+    setState(() {
+      _imageFiles = [];
+      _existingImages = [];
+      _latitude = null;
+      _longitude = null;
+    });
   }
 
   @override

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '/features/property/data/models/property_model.dart';
 import '/features/property/presentation/widgets/favorite_button.dart';
-import 'package:azharapp/core/constants/app_colors.dart'; // Import AppColors
+import '/core/constants/app_colors.dart'; // Fix import path
+import '/core/utils/image_utils.dart'; // Fix import path
 
 class PropertyCard extends StatelessWidget {
   final PropertyModel property;
@@ -37,10 +38,7 @@ class PropertyCard extends StatelessWidget {
   }
 
   Widget _buildGridItem(BuildContext context) {
-    final imageUrl = property.images != null && property.images!.isNotEmpty
-        ? property.images!.first 
-        : 'https://via.placeholder.com/400x300?text=No+Image';
-
+    // Remove unused imageUrl variable
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -55,13 +53,11 @@ class PropertyCard extends StatelessWidget {
               children: [
                 // Property Image
                 Expanded(
-                  child: Image.network(
-                    imageUrl,
+                  child: ImageUtils.loadImage(
+                    url: property.images?.isNotEmpty == true ? property.images!.first : 'placeholder',
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.broken_image, size: 50)
-                    ),
+                    height: isGridItem ? 140 : 180,
                   ),
                 ),
                 // Property Info
@@ -129,10 +125,7 @@ class PropertyCard extends StatelessWidget {
   }
 
   Widget _buildListItem(BuildContext context) {
-    final imageUrl = property.images != null && property.images!.isNotEmpty
-        ? property.images!.first 
-        : 'https://via.placeholder.com/400x300?text=No+Image';
-
+    // Remove unused imageUrl variable 
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -149,12 +142,11 @@ class PropertyCard extends StatelessWidget {
                 SizedBox(
                   width: 120,
                   height: 120,
-                  child: Image.network(
-                    imageUrl,
+                  child: ImageUtils.loadImage(
+                    url: property.images?.isNotEmpty == true ? property.images!.first : 'placeholder',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.broken_image, size: 40)
-                    ),
+                    width: double.infinity,
+                    height: isGridItem ? 140 : 180,
                   ),
                 ),
                 // Property Info

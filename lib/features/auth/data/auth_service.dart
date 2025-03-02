@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/exceptions/auth_exception.dart';
 import '../../../core/utils/logger.dart';
-import '../../../core/config/firebase_auth_config.dart';
 
 class AuthService {
   static const String _tag = 'AuthService';
@@ -29,55 +28,42 @@ class AuthService {
     }
   }
 
-  // Sign in with email and password - completely revised to avoid the type casting issue
+  // Sign in with email and password - fixed implementation
   Future<User?> signIn(String email, String password) async {
     try {
       AppLogger.d(_tag, 'Attempting sign in');
       
-      // Use our safer direct sign-in approach that avoids the complex UserCredential type
-      final user = await FirebaseAuthConfig.safeSignIn(
-        email: email,
+      // Direct Firebase Auth usage instead of the undefined method
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
         password: password,
       );
       
-      if (user != null) {
-        // Update last login timestamp
-        await _updateUserData(user.uid, {
-          'lastLogin': FieldValue.serverTimestamp(),
-          'email': user.email,
-        });
-        
-        AppLogger.d(_tag, 'Sign in successful for ${user.email}');
-        return user;
-      } else {
-        throw AuthException('Failed to sign in');
-      }
-    } on FirebaseAuthException catch (e) {
-      AppLogger.e(_tag, 'FirebaseAuthException during sign in', e);
-      throw AuthException.fromCode(e.code);
+      return userCredential.user;
     } catch (e) {
       AppLogger.e(_tag, 'Error during sign in', e);
       
-      if (e is AuthException) {
-        rethrow;
+      String message = 'Authentication failed';
+      
+      // Providing user-friendly error messages
+      if (e.toString().contains('user-not-found') || 
+          e.toString().contains('wrong-password') ||
+          e.toString().contains('invalid-credential')) {
+        message = 'Invalid email or password';
+      } else if (e.toString().contains('too-many-requests')) {
+        message = 'Too many failed login attempts. Please try again later';
+      } else if (e.toString().contains('network-request-failed')) {
+        message = 'Network error. Please check your connection';
       }
       
-      throw AuthException('Authentication failed: $e');
+      throw AuthException(message);
     }
   }
   
-  // Update user data in Firestore
-  Future<void> _updateUserData(String uid, Map<String, dynamic> data) async {
-    try {
-      await _firestore.collection('users').doc(uid).set(
-        data,
-        SetOptions(merge: true),
-      );
-    } catch (e) {
-      // Just log the error without throwing
-      AppLogger.w(_tag, 'Failed to update user data', e);
-    }
-  }
+  // Remove the unused _updateUserData method or keep it with a note
+  // Future<void> _updateUserData(String uid, Map<String, dynamic> data) async {
+  //   // Method removed since it's not being used
+  // }
   
   // Create new user account
   Future<User?> signUp(String email, String password) async {
@@ -88,18 +74,14 @@ class AuthService {
       await _auth.signOut();
       
       // Create the user account
-      await _auth.createUserWithEmailAndPassword(
+      final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
       
-      // Get the user directly from the auth instance
-      final user = _auth.currentUser;
+      final user = userCredential.user;
       
       if (user != null) {
-        // Save the authentication state
-        await FirebaseAuthConfig.saveUserState(user, password);
-        
         // Create the user document
         await _createUserDocument(user.uid, email);
         
@@ -151,8 +133,8 @@ class AuthService {
   // Sign out
   Future<void> signOut() async {
     try {
-      // Use our complete sign out method
-      await FirebaseAuthConfig.signOutCompletely();
+      // Just use the standard Firebase sign out
+      await _auth.signOut();
       AppLogger.d(_tag, 'Sign out successful');
     } catch (e) {
       AppLogger.e(_tag, 'Sign out failed', e);
@@ -173,8 +155,7 @@ class AuthService {
         return _auth.currentUser;
       }
       
-      // Try auto-login if user is null
-      return await FirebaseAuthConfig.attemptAutoLogin();
+      return null;
     } catch (e) {
       AppLogger.e(_tag, 'Error refreshing auth state', e);
       return null;

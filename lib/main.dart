@@ -11,6 +11,8 @@ import 'core/navigation/route_names.dart';
 import 'features/property/data/property_repository.dart';
 import 'features/favorites/providers/favorites_provider.dart';
 import 'features/property/presentation/providers/property_provider.dart';
+import 'features/storage/providers/storage_provider.dart'; // Add this import
+import 'features/auth/presentation/providers/auth_provider.dart'; // Add this import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +22,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  print('Firebase initialized successfully');
+  // Replace print with debugPrint
+  debugPrint('Firebase initialized successfully');
   
   // Get SharedPreferences instance for providers
   final sharedPreferences = await SharedPreferences.getInstance();
@@ -41,6 +44,14 @@ void main() async {
         ),
         ChangeNotifierProvider<FavoritesProvider>(
           create: (_) => FavoritesProvider(propertyRepository, sharedPreferences),
+        ),
+        // Add the StorageProvider
+        ChangeNotifierProvider<StorageProvider>(
+          create: (_) => StorageProvider(),
+        ),
+        // Add AuthProvider before other providers that might depend on it
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider(),
         ),
         // Add other providers here
       ],
@@ -64,7 +75,17 @@ class MyApp extends StatelessWidget {
       themeMode: themeProvider.themeMode, // Use theme from provider
       debugShowCheckedModeBanner: false,
       initialRoute: RouteNames.splash,
+      // Use only one route generation approach - fix the duplicate onGenerateRoute
       onGenerateRoute: RouteGenerator.generateRoute,
+      // Handle unknown routes
+      onUnknownRoute: (settings) {
+        debugPrint('⚠️ App: Unknown route ${settings.name}');
+        return MaterialPageRoute(
+          builder: (_) => const Scaffold(
+            body: Center(child: Text('Route not found')),
+          ),
+        );
+      },
     );
   }
 }

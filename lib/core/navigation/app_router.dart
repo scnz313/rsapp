@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
+import 'package:provider/provider.dart'; // Add Provider import
+
+// Auth-related imports
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart';
-import '../../features/auth/presentation/screens/registration_screen.dart';
+import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
-import '../../features/auth/domain/enums/auth_status.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/domain/enums/auth_status.dart'; // Add AuthStatus enum import
+
+// Screen imports
+import '../../features/home/screens/home_screen.dart';
+import '../../features/property/presentation/screens/property_detail_screen.dart';
+import '../../features/search/screens/search_screen.dart';
+import '../../features/favorites/screens/favorites_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/property_upload_screen.dart';
+
+// Other imports
+import 'route_names.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -22,7 +35,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegistrationScreen(),
+        builder: (context, state) => const RegisterScreen(), // Changed from RegistrationScreen to RegisterScreen
       ),
       GoRoute(
         path: '/home',

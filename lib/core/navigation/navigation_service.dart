@@ -57,4 +57,16 @@ class NavigationService {
       arguments: arguments
     );
   }
+
+  // Add a helper method specifically for the property upload page
+  Future<dynamic> navigateToPropertyUpload({bool isAdmin = false, dynamic propertyToEdit}) {
+    debugPrint('🧭 NavigationService: Navigating to property upload screen');
+    return navigatorKey.currentState!.pushNamed(
+      '/property/upload',
+      arguments: {
+        'isAdminMode': isAdmin,
+        if (propertyToEdit != null) 'propertyToEdit': propertyToEdit,
+      },
+    );
+  }
 }

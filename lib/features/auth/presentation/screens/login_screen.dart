@@ -9,6 +9,7 @@ import '../../../../shared/widgets/loading_overlay.dart';
 import '../../../../core/utils/logger.dart';
 import '../screens/registration_screen.dart';
 import '../screens/reset_password_screen.dart';
+import '../../../../core/navigation/route_names.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String _tag = 'LoginScreen';
@@ -23,6 +24,20 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  void _handleLoginSuccess() {
+    // Check if we came from the property upload screen
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final redirectRoute = args is Map<String, dynamic> ? args['redirectRoute'] : null;
+    
+    if (redirectRoute != null) {
+      // Navigate to the redirect route (property upload)
+      Navigator.pushReplacementNamed(context, redirectRoute);
+    } else {
+      // Regular navigation to home
+      Navigator.pushReplacementNamed(context, RouteNames.home);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _passwordController.text,
                                 context,
                               );
+                              _handleLoginSuccess();
                             }
                           },
                           style: ElevatedButton.styleFrom(

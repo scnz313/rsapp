@@ -4,10 +4,14 @@ import 'models/property_model.dart';
 import 'models/property_dto.dart';
 import '../../../firebase/services/firestore_service.dart';
 import '../../../core/utils/exceptions/app_exception.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class PropertyRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirestoreService? _firestoreService;
+  final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   static const String _collection = 'properties';
 
   PropertyRepository([FirestoreService? firestoreService]) 
@@ -247,6 +251,41 @@ class PropertyRepository {
       return properties;
     } catch (e) {
       throw Exception('Failed to get filtered properties: $e');
+    }
+  }
+
+  Future<String> uploadImage(File imageFile) async {
+    try {
+      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      final ref = _firebaseStorage.ref().child('property_images/$fileName');
+      final uploadTask = ref.putFile(imageFile);
+      final snapshot = await uploadTask.whenComplete(() => {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      throw Exception('Failed to upload image: $e');
+    }
+  }
+
+  Future<String> createProperty(PropertyDto property) async {
+    try {
+      final docRef = await _firestore.collection(_collection).add(property.toJson());
+      return docRef.id;
+    } catch (e) {
+      throw Exception('Failed to create property: $e');
+    }
+  }
+
+  Future<List<String>> uploadPropertyImages(List<File> images) async {
+    try {
+      final List<String> urls = [];
+      for (final image in images) {
+        final url = await uploadImage(image);
+        urls.add(url);
+      }
+      return urls;
+    } catch (e) {
+      throw Exception('Failed to upload property images: $e');
     }
   }
 }

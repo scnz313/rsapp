@@ -23,10 +23,9 @@ class Validators {
       return 'Email is required';
     }
     
-    // Simple regex for email validation
-    final emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    final emailRegExp = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
     if (!emailRegExp.hasMatch(value)) {
-      return 'Please enter a valid email address';
+      return 'Enter a valid email address';
     }
     
     return null;
@@ -97,11 +96,9 @@ class Validators {
       return 'Phone number is required';
     }
     
-    // Remove any non-digit characters
-    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
-    
-    if (digitsOnly.length < 10) {
-      return 'Phone number must have at least 10 digits';
+    final phoneRegExp = RegExp(r'^[0-9]{10}$');
+    if (!phoneRegExp.hasMatch(value)) {
+      return 'Enter a valid 10 digit phone number';
     }
     
     return null;
@@ -128,6 +125,43 @@ class Validators {
     
     if (!urlRegExp.hasMatch(value)) {
       return 'Please enter a valid URL';
+    }
+    
+    return null;
+  }
+
+  /// Not empty validation
+  static String? validateNotEmpty(String? value, String errorMessage) {
+    if (value == null || value.trim().isEmpty) {
+      return errorMessage;
+    }
+    
+    return null;
+  }
+
+  /// Number validation
+  static String? validateNumber(String? value, String errorMessage) {
+    if (value == null || value.isEmpty) {
+      return errorMessage;
+    }
+    
+    final cleanValue = value.replaceAll(',', '');
+    if (double.tryParse(cleanValue) == null) {
+      return 'Please enter a valid number';
+    }
+    
+    return null;
+  }
+
+  /// Zip code validation
+  static String? validateZipCode(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Postal/ZIP code is required';
+    }
+    
+    final zipRegExp = RegExp(r'^[0-9]{6}$');
+    if (!zipRegExp.hasMatch(value)) {
+      return 'Enter a valid 6-digit postal code';
     }
     
     return null;

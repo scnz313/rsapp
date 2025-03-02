@@ -23,7 +23,7 @@ class StorageTester extends StatelessWidget {
       );
       
       final file = File(pickedFile.path);
-      final downloadUrl = await provider.uploadPropertyImage(file);
+      final downloadUrl = await provider.uploadImage(file);
       
       if (!context.mounted) return;  // Check mounted state after async gap
       ScaffoldMessenger.of(context).showSnackBar(

@@ -39,7 +39,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadProperties();
+    
+    // Refresh data when the screen first loads
+    _loadAllData(); 
     
     // Add debug logging
     debugPrint('🏠 HomeScreen: initState called');
@@ -50,6 +52,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
   }
   
+  // New method to load all property data
+  Future<void> _loadAllData() async {
+    final provider = Provider.of<PropertyProvider>(context, listen: false);
+    try {
+      await provider.fetchProperties();
+      await provider.fetchFeaturedProperties();
+      await provider.fetchRecentProperties(); // Add this to specifically load recent properties
+    } catch (e) {
+      debugPrint('Error loading property data: $e');
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -551,13 +565,32 @@ final LatLng position = property.latitude != null && property.longitude != null
   Widget _buildNavBarItem(IconData icon, String label, {bool isSelected = false}) {
     return InkWell(
       onTap: () {
+        debugPrint('📱 HomeScreen: Bottom nav tapped: $label');
+        
         // Handle navigation based on label
         switch (label) {
           case 'Search':
             Navigator.pushNamed(context, RouteNames.search);
             break;
           case 'Post':
-            Navigator.pushNamed(context, RouteNames.propertyCreate);
+            debugPrint('📱 HomeScreen: Navigating to PropertyUploadScreen');
+            // Add temporary visual feedback
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Opening property upload form...'),
+                duration: Duration(milliseconds: 500),
+              ),
+            );
+            
+            // Use standard navigation instead of trying to access a NavigationService
+            Navigator.pushNamed(
+              context, 
+              RouteNames.propertyUpload,
+            ).then((_) {
+              debugPrint('📱 HomeScreen: Returned from PropertyUploadScreen');
+            }).catchError((e) {
+              debugPrint('⚠️ Navigation Error: $e');
+            });
             break;
           case 'Favorites':
             Navigator.pushNamed(context, RouteNames.favorites);

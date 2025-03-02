@@ -27,6 +27,7 @@ class RouteNames {
   static const String propertyMap = '/properties/map';
   static const String propertyCreate = '/property/create';
   static const String propertyEdit = '/property/:id/edit';
+  static const String propertyUpload = '/property/upload';
   
   // Admin routes
   static const String adminDashboard = '/admin';

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/utils/exceptions/auth_exception.dart';
 import '../../../../core/utils/logger.dart';
+import '../../../../core/utils/dev_utils.dart'; // Import the dev utils
 import '../../data/auth_service.dart';
 import '../../domain/enums/auth_status.dart';
 
@@ -51,20 +52,37 @@ class AuthProvider extends ChangeNotifier {
   bool get isAdmin => _state.isAdmin;
   User? get user => _state.user;
   AuthState get state => _state;
-  bool get isAuthenticated => _state.status == AuthStatus.authenticated;
+  bool get isAuthenticated => 
+    (DevUtils.isDev && DevUtils.bypassAuth) || _state.status == AuthStatus.authenticated;
 
   // Initialize auth state
   AuthProvider() {
     _initAuthState();
   }
 
-  // Initialize auth state
+  // Initialize auth state - modified to support dev mode
   Future<void> _initAuthState() async {
     _state = _state.copyWith(isLoading: true);
     notifyListeners();
 
     try {
-      // Try to refresh auth state first before checking current user
+      if (DevUtils.isDev && DevUtils.bypassAuth) {
+        // In dev mode with bypass enabled, simulate a logged-in user
+        DevUtils.log('Using dev bypass mode for authentication');
+        
+        // Create a fake auth state - code will think we're logged in
+        _state = _state.copyWith(
+          status: AuthStatus.authenticated,
+          isAdmin: true, // Set to true if you need admin access
+          user: _createDevUser(),
+          isLoading: false
+        );
+        
+        notifyListeners();
+        return;
+      }
+      
+      // Normal auth flow
       final user = await _authService.refreshAuthState();
       
       if (user != null) {
@@ -104,12 +122,32 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Sign in method
+  // Sign in method - modified for dev mode
   Future<bool> signIn(String email, String password, BuildContext context) async {
     _state = _state.copyWith(isLoading: true, error: null);
     notifyListeners();
 
     try {
+      if (DevUtils.isDev && DevUtils.bypassAuth) {
+        // In dev mode with bypass, always succeed
+        DevUtils.log('Bypassing authentication for: $email');
+        
+        // Simulate short delay for UI feedback
+        await Future.delayed(const Duration(milliseconds: 800));
+        
+        _state = _state.copyWith(
+          status: AuthStatus.authenticated,
+          isAdmin: true, // Set to true for testing admin features
+          user: _createDevUser(),
+          isLoading: false,
+          error: null
+        );
+        
+        notifyListeners();
+        return true;
+      }
+      
+      // Regular auth flow
       AppLogger.d(_tag, 'Attempting sign in');
       
       // Call auth service
@@ -148,6 +186,23 @@ class AuthProvider extends ChangeNotifier {
       );
       notifyListeners();
       return false;
+    }
+  }
+
+  // Create a fake User object for development mode
+  User? _createDevUser() {
+    if (!DevUtils.isDev) return null;
+    
+    try {
+      // Instead of trying to cast to User, we'll just keep this as a dynamic object
+      // and modify our code to handle this special case
+      DevUtils.log('Creating dev user for testing');
+      
+      // Return null here - we'll handle the dev user differently
+      return null;
+    } catch (e) {
+      AppLogger.e(_tag, 'Error creating dev user', e);
+      return null;
     }
   }
 
@@ -236,5 +291,13 @@ class AuthProvider extends ChangeNotifier {
   void resetError() {
     _state = _state.copyWith(error: null);
     notifyListeners();
+  }
+
+  // Add a method to get user ID that works in dev mode
+  String? getUserId() {
+    if (DevUtils.isDev && DevUtils.bypassAuth) {
+      return DevUtils.devUserId;
+    }
+    return user?.uid;
   }
 }
