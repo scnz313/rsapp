@@ -114,12 +114,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Add method to load theme settings
+  // Update the _loadThemeSettings method to sync with ThemeProvider
   void _loadThemeSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isDarkMode = prefs.getBool('settings_dark_mode') ?? false;
-    });
+    
+    // Get the value from SharedPreferences
+    final savedDarkMode = prefs.getBool('settings_dark_mode') ?? false;
+    
+    // Ensure we're in sync with the ThemeProvider
+    if (mounted) {
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      
+      // Only update state if there's a mismatch - prevents unnecessary state changes
+      if (savedDarkMode != themeProvider.isDarkMode) {
+        setState(() {
+          _isDarkMode = themeProvider.isDarkMode;
+        });
+      } else {
+        setState(() {
+          _isDarkMode = savedDarkMode;
+        });
+      }
+    }
   }
   
   @override
@@ -500,7 +516,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Show settings modal (dark mode, notifications, location)
+  // Update the settings modal to use the correct theme toggling
   void _showSettingsModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -520,7 +536,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Only Dark Mode Toggle
+                  // Dark Mode Toggle
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Dark Mode'),
@@ -538,16 +554,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Save dark mode setting
+                        // Save dark mode setting to local preferences
                         await _prefs.setBool('settings_dark_mode', _isDarkMode);
                         
-                        if (!mounted) return; // Add mounted check
+                        if (!mounted) return;
                         
-                        // Update theme provider using correct method
+                        // Get theme provider and properly toggle theme
                         final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-                        themeProvider.setTheme(_isDarkMode ? ThemeOption.dark : ThemeOption.light);
                         
-                        if (!mounted) return; // Add mounted check
+                        // Use the toggleTheme method directly if the new value differs from current
+                        if (_isDarkMode != themeProvider.isDarkMode) {
+                          await themeProvider.toggleTheme();
+                        }
+                        
+                        if (!mounted) return;
                         
                         Navigator.pop(context);
                         SnackBarUtils.showSuccessSnackBar(
