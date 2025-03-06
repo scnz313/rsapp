@@ -9,16 +9,18 @@ import 'package:path/path.dart' as path;
 // App imports
 import '/core/utils/snackbar_utils.dart';
 import '/core/utils/validation_utils.dart';
-import '/features/property/data/models/property_model.dart';
+import '/features/property/domain/models/property_model.dart';
 import '/features/property/presentation/providers/property_provider.dart';
 import '/features/storage/providers/storage_provider.dart';
-import '/features/auth/presentation/providers/auth_provider.dart';
+import 'package:azharapp/features/auth/domain/providers/auth_provider.dart';
 import '/core/utils/dev_utils.dart';
+import '../../../../core/navigation/app_navigation.dart'; // Updated import
 
 class PropertyUploadScreen extends StatefulWidget {
   final PropertyModel? propertyToEdit;
+  final bool showNavBar;
 
-  const PropertyUploadScreen({Key? key, this.propertyToEdit}) : super(key: key);
+  const PropertyUploadScreen({Key? key, this.propertyToEdit, this.showNavBar = true}) : super(key: key);
 
   @override
   State<PropertyUploadScreen> createState() => _PropertyUploadScreenState();
@@ -345,10 +347,10 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.propertyToEdit != null ? 'Edit Property' : 'Add Property'),
-      ),
+    return AppScaffold(
+      currentIndex: 2, // Property Upload is index 2 (admin only)
+      title: 'Add Property',
+      showNavBar: widget.showNavBar, // Add this parameter
       body: _isUploading
           ? const Center(child: CircularProgressIndicator())
           : Form(

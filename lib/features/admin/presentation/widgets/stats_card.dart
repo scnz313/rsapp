@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../models/admin_stats.dart';
+import '../../domain/models/admin_stats.dart';
 
 enum ChartType { line, bar, pie }
 

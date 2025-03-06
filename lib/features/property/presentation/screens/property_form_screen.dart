@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/property_model.dart';
+import '../../domain/models/property_model.dart';
 
 /// Form modes for property form
 enum PropertyFormMode {

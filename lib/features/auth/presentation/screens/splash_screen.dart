@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/navigation/route_names.dart';
 import '../../../../core/utils/debug_logger.dart';
 import '../../../../core/providers/provider_container.dart';
 import '../../domain/providers/auth_provider.dart';
 import '../screens/login_screen.dart';
 import '../screens/landing_screen.dart';
 import '../../../../core/services/global_auth_service.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -23,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late Animation<double> _scaleAnimation;
   late Animation<double> _slideAnimation;
   bool _navigationAttempted = false;
+  bool _timeoutOccurred = false;
 
   @override
   void initState() {
@@ -72,10 +73,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         _navigateToLanding();
       }
     });
+
+    // Add a timeout to ensure we don't get stuck
+    Timer(const Duration(seconds: 8), () {
+      if (mounted && !_timeoutOccurred) {
+        _timeoutOccurred = true;
+        DebugLogger.error('Splash screen timeout occurred, navigating to login screen');
+        context.go('/login');
+      }
+    });
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    if (_navigationAttempted) return; 
+    if (_navigationAttempted || _timeoutOccurred) return; 
     _navigationAttempted = true;
     DebugLogger.info("Checking authentication status");
     
@@ -103,30 +113,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   void _navigateToLanding() {
     DebugLogger.route('Navigating to landing screen');
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LandingScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          var begin = const Offset(0.0, 0.1);
-          var end = Offset.zero;
-          var curve = Curves.easeOutCubic;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            ),
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 800),
-      ),
-    );
+    if (!mounted) return;
+    context.go('/landing');
   }
 
   void _navigateToHome() {
     DebugLogger.route('Navigating to home screen');
-    Navigator.of(context).pushReplacementNamed(RouteNames.home);
+    if (!mounted) return;
+    context.go('/home');
   }
 
   @override

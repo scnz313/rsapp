@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '/features/home/screens/home_screen.dart';
+import 'package:azharapp/features/home/presentation/screens/home_screen.dart';
 
 /// Auth status enum to track authentication state
 enum AuthStatus {

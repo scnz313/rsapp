@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.rsapp-mergeDebugResources-46:/values-ldltr-v21/values-ldltr-v21.xml",
+            "outputFile": "com.example.rsapp-mergeDebugResources-47:/values-ldltr-v21/values-ldltr-v21.xml",
             "map": [
                 {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/3a4dcd3e8c92efa77cfa193b658940d9/transformed/appcompat-1.1.0/res/values-ldltr-v21/values-ldltr-v21.xml",
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/8672542fff6e2103c63e7b98b328f638/transformed/appcompat-1.1.0/res/values-ldltr-v21/values-ldltr-v21.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/features/property/data/models/property_model.dart';
+import '/features/property/domain/models/property_model.dart';
 
 class PropertyFilterSheet extends StatefulWidget {
   final Function(Map<String, dynamic>) onApplyFilters;

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.rsapp-mergeDebugResources-46:/values-v24/values-v24.xml",
+            "outputFile": "com.example.rsapp-mergeDebugResources-47:/values-v24/values-v24.xml",
             "map": [
                 {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/3a4dcd3e8c92efa77cfa193b658940d9/transformed/appcompat-1.1.0/res/values-v24/values-v24.xml",
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/8672542fff6e2103c63e7b98b328f638/transformed/appcompat-1.1.0/res/values-v24/values-v24.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/cd79e8926f3586b575e2cf621318b1c2/transformed/media-1.1.0/res/values-v24/values-v24.xml",
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/707932e288a3bd88fb4a428bc13cc00f/transformed/media-1.1.0/res/values-v24/values-v24.xml",
                     "from": {
                         "startLines": "2,3,4,5",
                         "startColumns": "4,4,4,4",

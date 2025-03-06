@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/core/constants/app_styles.dart';
-import '/features/property/data/models/property_model.dart';
+import '../../domain/models/property_model.dart';
 
 class PropertyFilter extends StatefulWidget {
   final Map<String, dynamic> initialFilters;

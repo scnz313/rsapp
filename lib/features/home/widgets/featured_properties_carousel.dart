@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '/core/constants/app_colors.dart';
-import '/features/property/data/models/property_model.dart';
+import '../../property/domain/models/property_model.dart';
 
 class FeaturedPropertiesCarousel extends StatefulWidget {
   final List<PropertyModel> properties;

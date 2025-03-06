@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/audit_log.dart';
-import '../models/admin_stats.dart';
-import '../models/admin_user.dart';
-import '../models/property_trend.dart';
+import '../domain/models/audit_log.dart';
+import '../domain/models/admin_stats.dart';
+import '../domain/models/admin_user.dart';
+import '../domain/models/property_trend.dart';
 
 class AdminRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

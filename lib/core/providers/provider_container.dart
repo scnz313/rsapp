@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/domain/providers/auth_provider.dart';
 
 /// A global singleton container for providers
 /// This allows us to access providers outside the widget tree

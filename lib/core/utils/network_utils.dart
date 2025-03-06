@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
-import '../utils/logger.dart';
+import 'debug_logger.dart';
+import 'app_logger.dart'; // Fixed import path
 
 /// Utility class to handle network related operations
 class NetworkUtils {
@@ -50,8 +51,8 @@ class NetworkUtils {
       case ConnectivityResult.other:
         return 'Other';
       case ConnectivityResult.none:
-      default:
         return 'No Connection';
+      // Removed redundant default case that was causing the warning
     }
   }
   

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/features/favorites/providers/favorites_provider.dart';
-import '../../data/models/property_model.dart';
+import '../../domain/models/property_model.dart';
 
 class FavoriteButton extends StatelessWidget {
   final PropertyModel property;

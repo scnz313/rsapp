@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../services/global_auth_service.dart';
 import '../navigation/route_names.dart';
-import '../utils/debug_logger.dart';
+import '../../core/utils/debug_logger.dart';
 
 /// Helper for safer navigation with auth checks
 class SafeNavigator {

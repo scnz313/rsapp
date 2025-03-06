@@ -1,44 +1,27 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.rsapp-mergeDebugResources-46:/values-en-rIN/values-en-rIN.xml",
+            "outputFile": "com.example.rsapp-mergeDebugResources-47:/values-en-rIN/values-en-rIN.xml",
             "map": [
                 {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/8cf478dec41eed746328fa8046755ba2/transformed/core-1.13.1/res/values-en-rIN/values-en-rIN.xml",
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/6fec79dfcef552889e3835cc7bab572a/transformed/preference-1.2.1/res/values-en-rIN/values-en-rIN.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,151,253,352,451,555,658,774",
-                        "endColumns": "95,101,98,98,103,102,115,100",
-                        "endOffsets": "146,248,347,446,550,653,769,870"
+                        "startLines": "2,3,4,5,6,7,8",
+                        "startColumns": "4,4,4,4,4,4,4",
+                        "startOffsets": "105,173,260,334,468,637,717",
+                        "endColumns": "67,86,73,133,168,79,75",
+                        "endOffsets": "168,255,329,463,632,712,788"
                     },
                     "to": {
-                        "startLines": "29,30,31,32,33,34,35,45",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "2762,2858,2960,3059,3158,3262,3365,4329",
-                        "endColumns": "95,101,98,98,103,102,115,100",
-                        "endOffsets": "2853,2955,3054,3153,3257,3360,3476,4425"
+                        "startLines": "36,38,42,43,46,47,48",
+                        "startColumns": "4,4,4,4,4,4,4",
+                        "startOffsets": "3481,3647,4039,4113,4430,4599,4679",
+                        "endColumns": "67,86,73,133,168,79,75",
+                        "endOffsets": "3544,3729,4108,4242,4594,4674,4750"
                     }
                 },
                 {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/308a2e77faa557d0bd706972416bde6a/transformed/browser-1.8.0/res/values-en-rIN/values-en-rIN.xml",
-                    "from": {
-                        "startLines": "2,3,4,5",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,153,250,359",
-                        "endColumns": "97,96,108,98",
-                        "endOffsets": "148,245,354,453"
-                    },
-                    "to": {
-                        "startLines": "37,39,40,41",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "3549,3734,3831,3940",
-                        "endColumns": "97,96,108,98",
-                        "endOffsets": "3642,3826,3935,4034"
-                    }
-                },
-                {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/3a4dcd3e8c92efa77cfa193b658940d9/transformed/appcompat-1.1.0/res/values-en-rIN/values-en-rIN.xml",
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/8672542fff6e2103c63e7b98b328f638/transformed/appcompat-1.1.0/res/values-en-rIN/values-en-rIN.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,20 +38,37 @@
                     }
                 },
                 {
-                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/0098a6e93522fecc805d8900172003dc/transformed/preference-1.2.1/res/values-en-rIN/values-en-rIN.xml",
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/7f46bbd13206153774356ca6103aa890/transformed/core-1.13.1/res/values-en-rIN/values-en-rIN.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8",
-                        "startColumns": "4,4,4,4,4,4,4",
-                        "startOffsets": "105,173,260,334,468,637,717",
-                        "endColumns": "67,86,73,133,168,79,75",
-                        "endOffsets": "168,255,329,463,632,712,788"
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,151,253,352,451,555,658,774",
+                        "endColumns": "95,101,98,98,103,102,115,100",
+                        "endOffsets": "146,248,347,446,550,653,769,870"
                     },
                     "to": {
-                        "startLines": "36,38,42,43,46,47,48",
-                        "startColumns": "4,4,4,4,4,4,4",
-                        "startOffsets": "3481,3647,4039,4113,4430,4599,4679",
-                        "endColumns": "67,86,73,133,168,79,75",
-                        "endOffsets": "3544,3729,4108,4242,4594,4674,4750"
+                        "startLines": "29,30,31,32,33,34,35,45",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "2762,2858,2960,3059,3158,3262,3365,4329",
+                        "endColumns": "95,101,98,98,103,102,115,100",
+                        "endOffsets": "2853,2955,3054,3153,3257,3360,3476,4425"
+                    }
+                },
+                {
+                    "source": "/Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/res/values-en-rIN/values-en-rIN.xml",
+                    "from": {
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,153,250,359",
+                        "endColumns": "97,96,108,98",
+                        "endOffsets": "148,245,354,453"
+                    },
+                    "to": {
+                        "startLines": "37,39,40,41",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "3549,3734,3831,3940",
+                        "endColumns": "97,96,108,98",
+                        "endOffsets": "3642,3826,3935,4034"
                     }
                 }
             ]

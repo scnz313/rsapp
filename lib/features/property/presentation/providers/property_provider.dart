@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/core/utils/dev_utils.dart'; // Add this import for DevUtils
-import '/features/property/data/models/property_model.dart';
+import '../../domain/models/property_model.dart';
 import '../../data/property_repository.dart';
 
 class PropertyProvider with ChangeNotifier {

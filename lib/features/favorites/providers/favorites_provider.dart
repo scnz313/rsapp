@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '/features/property/data/models/property_model.dart';
+import '/features/property/domain/models/property_model.dart';
 import '/features/property/data/property_repository.dart';
 
 class FavoritesProvider extends ChangeNotifier {

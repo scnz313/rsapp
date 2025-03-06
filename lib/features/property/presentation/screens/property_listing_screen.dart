@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/features/property/data/models/property_model.dart';
+import '/features/property/domain/models/property_model.dart';
 import '../providers/property_provider.dart';
 import '../widgets/property_filter.dart';
 import '/features/property/presentation/screens/property_detail_screen.dart';

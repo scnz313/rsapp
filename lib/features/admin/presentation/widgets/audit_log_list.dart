@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/admin_provider.dart';
-import '../../models/audit_log.dart';
+import '../../domain/models/audit_log.dart';
 
 class AuditLogList extends StatelessWidget {
   final List<Map<String, dynamic>> logs;

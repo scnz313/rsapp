@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/admin_provider.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../models/admin_user.dart';
+import '../../domain/models/admin_user.dart';
 
 class UserDataTable extends StatefulWidget {
   final List<AdminUser> users;

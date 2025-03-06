@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/features/property/data/models/property_model.dart';
+import '/features/property/domain/models/property_model.dart';
 import '/features/property/presentation/widgets/favorite_button.dart';
 import '/core/constants/app_colors.dart'; // Fix import path
 import '/core/utils/image_utils.dart'; // Fix import path

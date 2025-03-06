@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';  // Updated import path
-import '/features/main/screens/main_container_screen.dart'; // Import the main container
+import '../../domain/providers/auth_provider.dart';
+import '../../domain/enums/auth_status.dart'; // Add this import for AuthStatus
+import '../screens/landing_screen.dart';
+import '../screens/login_screen.dart';
+import '/features/main/screens/main_container_screen.dart';
 
-/// This wrapper component checks authentication state and redirects accordingly
-/// Currently modified to always show the MainContainerScreen and bypass authentication
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({Key? key}) : super(key: key);
 
@@ -12,26 +13,17 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('AuthWrapper: Building...');
     
-    // Skip authentication for now and return MainContainerScreen
-    return const MainContainerScreen(initialIndex: 0);
-    
-    // The real implementation will look like this:
-    /*
     final authProvider = Provider.of<AuthProvider>(context);
     
     switch (authProvider.status) {
       case AuthStatus.authenticated:
         return const MainContainerScreen();
       case AuthStatus.unauthenticated:
-        return const LoginScreen();
-      case AuthStatus.authenticating:
-        return const LoadingScreen();
+        return const LandingScreen(); // Show landing page instead of login directly
       case AuthStatus.error:
-        return const LoginScreen(); // Could show an error screen instead
-      case AuthStatus.initial:
+        return const LandingScreen(); // Show landing on error too
       default:
-        return const SplashScreen();
+        return const LandingScreen(); // Default to landing
     }
-    */
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../../../services/map_service.dart';
-import '../../data/models/property_model.dart';
+import '../../domain/models/property_model.dart';
 import '../../presentation/providers/property_provider.dart';
 import '../../presentation/widgets/property_card.dart';
 import '../../../../core/constants/app_colors.dart';

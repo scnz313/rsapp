@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/audit_log_list.dart';
-import '../../models/property_trend.dart';
+import '../../domain/models/property_trend.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});

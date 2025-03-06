@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'models/property_model.dart';
+import '../domain/models/property_model.dart';
 import 'models/property_dto.dart';
 import '../../../firebase/services/firestore_service.dart';
 import '../../../core/utils/exceptions/app_exception.dart';
