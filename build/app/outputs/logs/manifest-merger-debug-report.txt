@@ -22,6 +22,8 @@ MERGED from [:firebase_core] /Users/hashi/Desktop/projects/RealState/rsapp/build
 MERGED from [:firebase_core] /Users/hashi/Desktop/projects/RealState/rsapp/build/firebase_core/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-13:19
 MERGED from [:image_picker_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/image_picker_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:5-32:19
 MERGED from [:image_picker_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/image_picker_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:5-32:19
+MERGED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-33:19
+MERGED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-33:19
 MERGED from [:url_launcher_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-12:19
 MERGED from [:url_launcher_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:7:5-12:19
 MERGED from [com.google.firebase:firebase-functions:20.4.0] /Users/hashi/.gradle/caches/8.10.2/transforms/341f04a07774f85fd76dbc79f757d1a1/transformed/jetified-firebase-functions-20.4.0/AndroidManifest.xml:11:5-22:19
@@ -123,6 +125,7 @@ MERGED from [:google_sign_in_android] /Users/hashi/Desktop/projects/RealState/rs
 MERGED from [:package_info_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/package_info_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
 MERGED from [:path_provider_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/path_provider_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
 MERGED from [:permission_handler_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/permission_handler_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
+MERGED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-35:12
 MERGED from [:sqflite_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/sqflite_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
 MERGED from [:url_launcher_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-14:12
 MERGED from [com.google.firebase:firebase-functions:20.4.0] /Users/hashi/.gradle/caches/8.10.2/transforms/341f04a07774f85fd76dbc79f757d1a1/transformed/jetified-firebase-functions-20.4.0/AndroidManifest.xml:2:1-24:12
@@ -171,10 +174,8 @@ MERGED from [androidx.fragment:fragment-ktx:1.7.1] /Users/hashi/.gradle/caches/8
 MERGED from [androidx.fragment:fragment:1.7.1] /Users/hashi/.gradle/caches/8.10.2/transforms/504a3b9bc759ca6028567aaea36c5498/transformed/fragment-1.7.1/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.activity:activity-ktx:1.9.3] /Users/hashi/.gradle/caches/8.10.2/transforms/f63e4fb308e51274fbafb363fde41672/transformed/jetified-activity-ktx-1.9.3/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.activity:activity:1.9.3] /Users/hashi/.gradle/caches/8.10.2/transforms/87eca1956ddb86a2a7193da8df59556f/transformed/jetified-activity-1.9.3/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.browser:browser:1.8.0] /Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/72288f06de6b9dcc1016cab49be96bb3/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.loader:loader:1.1.0] /Users/hashi/.gradle/caches/8.10.2/transforms/7615c90919e3b2a032980a284a49f995/transformed/loader-1.1.0/AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/93427648a2a3d956663464cf420248d0/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/35d43ac5b93081fc719d5206591bc8b3/transformed/jetified-lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/4cf4aaf0c2a5f8e9be19976f292485c2/transformed/jetified-lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/ee40907df6635dadbd2abe5161721138/transformed/jetified-lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:17:1-22:12
@@ -182,6 +183,8 @@ MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.7.0] /Users/hashi/.gra
 MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/0df03071d3ea5a13ca8a701a85da690b/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/23adfe722c8911b0c72ccd7b6c20c672/transformed/jetified-lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.core:core-ktx:1.13.1] /Users/hashi/.gradle/caches/8.10.2/transforms/1012b3d72a26572e790cb673f126d840/transformed/jetified-core-ktx-1.13.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.browser:browser:1.8.0] /Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/93427648a2a3d956663464cf420248d0/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.appcompat:appcompat-resources:1.1.0] /Users/hashi/.gradle/caches/8.10.2/transforms/0774b2cdbbb3e8e500618a693ab62325/transformed/jetified-appcompat-resources-1.1.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/2ff4a9d3bdd4e714f0b3a4ef81cefccc/transformed/drawerlayout-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.coordinatorlayout:coordinatorlayout:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/765cbe31314e92111ddb6ec950f59a6b/transformed/coordinatorlayout-1.0.0/AndroidManifest.xml:17:1-22:12
@@ -361,6 +364,8 @@ MERGED from [:path_provider_android] /Users/hashi/Desktop/projects/RealState/rsa
 MERGED from [:path_provider_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/path_provider_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
 MERGED from [:permission_handler_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/permission_handler_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
 MERGED from [:permission_handler_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/permission_handler_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
 MERGED from [:sqflite_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/sqflite_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
 MERGED from [:sqflite_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/sqflite_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
 MERGED from [:url_launcher_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
@@ -457,14 +462,10 @@ MERGED from [androidx.activity:activity-ktx:1.9.3] /Users/hashi/.gradle/caches/8
 MERGED from [androidx.activity:activity-ktx:1.9.3] /Users/hashi/.gradle/caches/8.10.2/transforms/f63e4fb308e51274fbafb363fde41672/transformed/jetified-activity-ktx-1.9.3/AndroidManifest.xml:5:5-44
 MERGED from [androidx.activity:activity:1.9.3] /Users/hashi/.gradle/caches/8.10.2/transforms/87eca1956ddb86a2a7193da8df59556f/transformed/jetified-activity-1.9.3/AndroidManifest.xml:20:5-44
 MERGED from [androidx.activity:activity:1.9.3] /Users/hashi/.gradle/caches/8.10.2/transforms/87eca1956ddb86a2a7193da8df59556f/transformed/jetified-activity-1.9.3/AndroidManifest.xml:20:5-44
-MERGED from [androidx.browser:browser:1.8.0] /Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/AndroidManifest.xml:5:5-44
-MERGED from [androidx.browser:browser:1.8.0] /Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/72288f06de6b9dcc1016cab49be96bb3/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/72288f06de6b9dcc1016cab49be96bb3/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.loader:loader:1.1.0] /Users/hashi/.gradle/caches/8.10.2/transforms/7615c90919e3b2a032980a284a49f995/transformed/loader-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.loader:loader:1.1.0] /Users/hashi/.gradle/caches/8.10.2/transforms/7615c90919e3b2a032980a284a49f995/transformed/loader-1.1.0/AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/93427648a2a3d956663464cf420248d0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
-MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/93427648a2a3d956663464cf420248d0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/35d43ac5b93081fc719d5206591bc8b3/transformed/jetified-lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/35d43ac5b93081fc719d5206591bc8b3/transformed/jetified-lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:5:5-44
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/4cf4aaf0c2a5f8e9be19976f292485c2/transformed/jetified-lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
@@ -479,6 +480,10 @@ MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/has
 MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/hashi/.gradle/caches/8.10.2/transforms/23adfe722c8911b0c72ccd7b6c20c672/transformed/jetified-lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.core:core-ktx:1.13.1] /Users/hashi/.gradle/caches/8.10.2/transforms/1012b3d72a26572e790cb673f126d840/transformed/jetified-core-ktx-1.13.1/AndroidManifest.xml:5:5-44
 MERGED from [androidx.core:core-ktx:1.13.1] /Users/hashi/.gradle/caches/8.10.2/transforms/1012b3d72a26572e790cb673f126d840/transformed/jetified-core-ktx-1.13.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.browser:browser:1.8.0] /Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.browser:browser:1.8.0] /Users/hashi/.gradle/caches/8.10.2/transforms/1a36ee1e87beff061ef9f2c053c4f171/transformed/browser-1.8.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/93427648a2a3d956663464cf420248d0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/93427648a2a3d956663464cf420248d0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.appcompat:appcompat-resources:1.1.0] /Users/hashi/.gradle/caches/8.10.2/transforms/0774b2cdbbb3e8e500618a693ab62325/transformed/jetified-appcompat-resources-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.appcompat:appcompat-resources:1.1.0] /Users/hashi/.gradle/caches/8.10.2/transforms/0774b2cdbbb3e8e500618a693ab62325/transformed/jetified-appcompat-resources-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.drawerlayout:drawerlayout:1.0.0] /Users/hashi/.gradle/caches/8.10.2/transforms/2ff4a9d3bdd4e714f0b3a4ef81cefccc/transformed/drawerlayout-1.0.0/AndroidManifest.xml:20:5-44
@@ -763,6 +768,28 @@ ADDED from [:image_picker_android] /Users/hashi/Desktop/projects/RealState/rsapp
 		ADDED from [:image_picker_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/image_picker_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:30:17-33
 	android:name
 		ADDED from [:image_picker_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/image_picker_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:29:17-63
+provider#dev.fluttercommunity.plus.share.ShareFileProvider
+ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:13:9-21:20
+	android:grantUriPermissions
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:17:13-47
+	android:authorities
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:15:13-74
+	android:exported
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:16:13-37
+	android:name
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:14:13-77
+receiver#dev.fluttercommunity.plus.share.SharePlusPendingIntent
+ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:26:9-32:20
+	android:exported
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:28:13-37
+	android:name
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:27:13-82
+intent-filter#action:name:EXTRA_CHOSEN_COMPONENT
+ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:29:13-31:29
+action#EXTRA_CHOSEN_COMPONENT
+ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:30:17-65
+	android:name
+		ADDED from [:share_plus] /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:30:25-62
 activity#io.flutter.plugins.urllauncher.WebViewActivity
 ADDED from [:url_launcher_android] /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:9-11:74
 	android:exported

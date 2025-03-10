@@ -65,6 +65,7 @@ com.example.rsapp-debug-63 /Users/hashi/Desktop/projects/RealState/rsapp/build/i
 com.example.rsapp-debug-64 /Users/hashi/Desktop/projects/RealState/rsapp/build/package_info_plus/intermediates/packaged_res/debug/packageDebugResources
 com.example.rsapp-debug-65 /Users/hashi/Desktop/projects/RealState/rsapp/build/path_provider_android/intermediates/packaged_res/debug/packageDebugResources
 com.example.rsapp-debug-66 /Users/hashi/Desktop/projects/RealState/rsapp/build/permission_handler_android/intermediates/packaged_res/debug/packageDebugResources
-com.example.rsapp-debug-67 /Users/hashi/Desktop/projects/RealState/rsapp/build/shared_preferences_android/intermediates/packaged_res/debug/packageDebugResources
-com.example.rsapp-debug-68 /Users/hashi/Desktop/projects/RealState/rsapp/build/sqflite_android/intermediates/packaged_res/debug/packageDebugResources
-com.example.rsapp-debug-69 /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/packaged_res/debug/packageDebugResources
+com.example.rsapp-debug-67 /Users/hashi/Desktop/projects/RealState/rsapp/build/share_plus/intermediates/packaged_res/debug/packageDebugResources
+com.example.rsapp-debug-68 /Users/hashi/Desktop/projects/RealState/rsapp/build/shared_preferences_android/intermediates/packaged_res/debug/packageDebugResources
+com.example.rsapp-debug-69 /Users/hashi/Desktop/projects/RealState/rsapp/build/sqflite_android/intermediates/packaged_res/debug/packageDebugResources
+com.example.rsapp-debug-70 /Users/hashi/Desktop/projects/RealState/rsapp/build/url_launcher_android/intermediates/packaged_res/debug/packageDebugResources

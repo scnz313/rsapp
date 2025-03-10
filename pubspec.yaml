@@ -43,6 +43,7 @@ dependencies:
   cached_network_image: 3.3.1
   flutter_svg: 2.0.9
   
+  
   # Forms and validation
   flutter_form_builder: 9.1.1
   form_builder_validators: 9.1.0
@@ -64,6 +65,7 @@ dependencies:
   package_info_plus: ^8.3.0  # Upgraded as suggested
   json_annotation: ^4.9.0
   json_serializable: ^6.9.4
+  timeago: ^3.6.0
   
   # Navigation
   go_router: ^13.0.1
@@ -76,6 +78,7 @@ dependencies:
   markdown_editor_plus: ^0.2.15
   google_sign_in: ^6.2.2
   flutter_riverpod: ^2.6.1
+  share_plus: ^10.1.4
    # Keep only this one
 
 dev_dependencies:

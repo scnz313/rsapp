@@ -1357,6 +1357,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  share_plus:
+    dependency: "direct main"
+    description:
+      name: share_plus
+      sha256: fce43200aa03ea87b91ce4c3ac79f0cecd52e2a7a56c7a4185023c271fbfa6da
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.1.4"
+  share_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: share_plus_platform_interface
+      sha256: cc012a23fc2d479854e6c80150696c4a5f5bb62cb89af4de1c505cf78d0a5d0b
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.2"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1578,6 +1594,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
+  timeago:
+    dependency: "direct main"
+    description:
+      name: timeago
+      sha256: "054cedf68706bb142839ba0ae6b135f6b68039f0b8301cbe8784ae653d5ff8de"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.7.0"
   timezone:
     dependency: transitive
     description:

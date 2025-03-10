@@ -666,6 +666,14 @@ rxdart
 2.12
 file:///Users/hashi/.pub-cache/hosted/pub.dev/rxdart-0.28.0/
 file:///Users/hashi/.pub-cache/hosted/pub.dev/rxdart-0.28.0/lib/
+share_plus
+3.4
+file:///Users/hashi/.pub-cache/hosted/pub.dev/share_plus-10.1.4/
+file:///Users/hashi/.pub-cache/hosted/pub.dev/share_plus-10.1.4/lib/
+share_plus_platform_interface
+2.18
+file:///Users/hashi/.pub-cache/hosted/pub.dev/share_plus_platform_interface-5.0.2/
+file:///Users/hashi/.pub-cache/hosted/pub.dev/share_plus_platform_interface-5.0.2/lib/
 shared_preferences
 3.5
 file:///Users/hashi/.pub-cache/hosted/pub.dev/shared_preferences-2.5.2/
@@ -774,6 +782,10 @@ test_api
 3.5
 file:///Users/hashi/.pub-cache/hosted/pub.dev/test_api-0.7.4/
 file:///Users/hashi/.pub-cache/hosted/pub.dev/test_api-0.7.4/lib/
+timeago
+2.12
+file:///Users/hashi/.pub-cache/hosted/pub.dev/timeago-3.7.0/
+file:///Users/hashi/.pub-cache/hosted/pub.dev/timeago-3.7.0/lib/
 timezone
 2.19
 file:///Users/hashi/.pub-cache/hosted/pub.dev/timezone-0.10.0/

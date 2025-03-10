@@ -20,7 +20,9 @@ class PropertyUploadScreen extends StatefulWidget {
   final PropertyModel? propertyToEdit;
   final bool showNavBar;
 
-  const PropertyUploadScreen({Key? key, this.propertyToEdit, this.showNavBar = true}) : super(key: key);
+  const PropertyUploadScreen(
+      {Key? key, this.propertyToEdit, this.showNavBar = true})
+      : super(key: key);
 
   @override
   State<PropertyUploadScreen> createState() => _PropertyUploadScreenState();
@@ -31,21 +33,22 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
   final _titleController = TextEditingController();
   final _priceController = TextEditingController();
   final _addressController = TextEditingController();
-  final _descriptionController = TextEditingController(); // Plain text instead of QuillController
-  
+  final _descriptionController =
+      TextEditingController(); // Plain text instead of QuillController
+
   // Property details
   final _bedroomsController = TextEditingController();
   final _bathroomsController = TextEditingController();
   final _areaController = TextEditingController();
   String _propertyType = 'House';
   String _listingType = 'Sale';
-  
+
   final ImagePicker _picker = ImagePicker();
   List<XFile> _imageFiles = [];
   List<String> _existingImages = [];
   bool _isUploading = false;
   bool _isLoadingLocation = false;
-  
+
   // Location data
   double? _latitude;
   double? _longitude;
@@ -53,7 +56,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     // If editing an existing property, populate the form
     if (widget.propertyToEdit != null) {
       _populateForm();
@@ -62,33 +65,36 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _priceController.dispose();
-    _addressController.dispose();
-    _descriptionController.dispose();
-    _bedroomsController.dispose();
-    _bathroomsController.dispose();
-    _areaController.dispose();
+    if (mounted) {
+      _titleController.dispose();
+      _priceController.dispose();
+      _addressController.dispose();
+      _descriptionController.dispose();
+      _bedroomsController.dispose();
+      _bathroomsController.dispose();
+      _areaController.dispose();
+    }
     super.dispose();
   }
 
   void _populateForm() {
     final property = widget.propertyToEdit!;
-    
+
     _titleController.text = property.title;
     _priceController.text = property.price.toString();
-    _addressController.text = property.location ?? '';  // Using location instead of address
+    _addressController.text =
+        property.location ?? ''; // Using location instead of address
     _descriptionController.text = property.description;
     _bedroomsController.text = property.bedrooms.toString();
     _bathroomsController.text = property.bathrooms.toString();
     _areaController.text = property.area.toString();
     _propertyType = property.propertyType;
     _listingType = property.listingType;
-    
+
     // Set location data
     _latitude = property.latitude;
     _longitude = property.longitude;
-    
+
     // Load existing images
     _existingImages = property.images ?? [];
   }
@@ -96,7 +102,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
   Future<void> _pickImages() async {
     try {
       final List<XFile> pickedFiles = await _picker.pickMultiImage();
-      
+
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _imageFiles.addAll(pickedFiles);
@@ -108,11 +114,12 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
       }
     }
   }
-  
+
   Future<void> _takePicture() async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
-      
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.camera);
+
       if (pickedFile != null) {
         setState(() {
           _imageFiles.add(pickedFile);
@@ -141,16 +148,17 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
     setState(() {
       _isLoadingLocation = true;
     });
-    
+
     try {
       // Check permission
       final permission = await Geolocator.checkPermission();
-      
+
       if (permission == LocationPermission.denied) {
         final requestPermission = await Geolocator.requestPermission();
         if (requestPermission == LocationPermission.denied) {
           if (mounted) {
-            SnackBarUtils.showErrorSnackBar(context, 'Location permission denied');
+            SnackBarUtils.showErrorSnackBar(
+                context, 'Location permission denied');
           }
           setState(() {
             _isLoadingLocation = false;
@@ -158,7 +166,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           SnackBarUtils.showErrorSnackBar(
@@ -169,21 +177,21 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
         });
         return;
       }
-      
+
       // Get current position
       final position = await Geolocator.getCurrentPosition();
-      
+
       // Get address from coordinates
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
-      
+
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
-        final address = 
+        final address =
             '${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}, ${place.country}';
-        
+
         setState(() {
           _addressController.text = address;
           _latitude = position.latitude;
@@ -205,14 +213,15 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     setState(() {
       _isUploading = true;
     });
-    
+
     try {
-      final propertyProvider = Provider.of<PropertyProvider>(context, listen: false);
-      
+      final propertyProvider =
+          Provider.of<PropertyProvider>(context, listen: false);
+
       // Get user ID - handle development mode
       String userId;
       if (DevUtils.isDev && DevUtils.bypassAuth) {
@@ -225,40 +234,43 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
           throw Exception('User not logged in');
         }
       }
-      
+
       // Prepare images upload
       List<String> allImages = [..._existingImages];
-      
+
       // Only try to upload new images if there are any
       if (_imageFiles.isNotEmpty) {
         try {
-          final storageProvider = Provider.of<StorageProvider>(context, listen: false);
+          final storageProvider =
+              Provider.of<StorageProvider>(context, listen: false);
           List<String> uploadedImageUrls = [];
-          
+
           // Upload each image with error handling
           for (final imageFile in _imageFiles) {
             try {
               final fileName = path.basename(imageFile.path);
-              final destination = 'properties/${DateTime.now().millisecondsSinceEpoch}_$fileName';
-              
+              final destination =
+                  'properties/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+
               final downloadUrl = await storageProvider.uploadFile(
                 File(imageFile.path),
                 destination,
               );
-              
+
               uploadedImageUrls.add(downloadUrl);
             } catch (e) {
               DevUtils.log('Error uploading image: $e');
               if (DevUtils.isDev) {
                 // In dev mode, use a placeholder for failed uploads
-                uploadedImageUrls.add('https://via.placeholder.com/800x600?text=Upload+Failed');
+                uploadedImageUrls.add(
+                    'https://via.placeholder.com/800x600?text=Upload+Failed');
               } else {
                 // In production, rethrow
                 rethrow;
               }
             }
           }
-          
+
           allImages = [..._existingImages, ...uploadedImageUrls];
         } catch (e) {
           // In dev mode, continue with existing images
@@ -268,11 +280,12 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
           DevUtils.log('Continuing with existing images only due to error: $e');
           // Check if the widget is still mounted before using BuildContext
           if (mounted) {
-            SnackBarUtils.showWarningSnackBar(context, 'Failed to upload images, using existing only');
+            SnackBarUtils.showWarningSnackBar(
+                context, 'Failed to upload images, using existing only');
           }
         }
       }
-      
+
       // Create property data map
       final propertyData = {
         'id': widget.propertyToEdit?.id,
@@ -288,31 +301,39 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
         'longitude': _longitude,
         'createdAt': widget.propertyToEdit?.createdAt ?? DateTime.now(),
         'updatedAt': DateTime.now(),
-        'type': PropertyType.house.toString().split('.').last, // Use enum value's string representation
-        'status': PropertyStatus.available.toString().split('.').last, // Use enum value's string representation
+        'type': PropertyType.house
+            .toString()
+            .split('.')
+            .last, // Use enum value's string representation
+        'status': PropertyStatus.available
+            .toString()
+            .split('.')
+            .last, // Use enum value's string representation
         'propertyType': _propertyType,
         'listingType': _listingType,
         'ownerId': userId,
       };
-      
+
       // Save property
       if (widget.propertyToEdit != null && widget.propertyToEdit!.id != null) {
-        await propertyProvider.updateProperty(widget.propertyToEdit!.id!, propertyData);
+        await propertyProvider.updateProperty(
+            widget.propertyToEdit!.id!, propertyData);
       } else {
         await propertyProvider.addNewProperty(propertyData);
       }
-      
+
       if (mounted) {
         SnackBarUtils.showSuccessSnackBar(
-          context, 
-          widget.propertyToEdit != null ? 'Property updated successfully' : 'Property added successfully'
-        );
-        
+            context,
+            widget.propertyToEdit != null
+                ? 'Property updated successfully'
+                : 'Property added successfully');
+
         // Clear form
         if (widget.propertyToEdit == null) {
           _clearForm();
         }
-        
+
         // Navigate back
         Navigator.pop(context);
       }
@@ -397,7 +418,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
             labelText: 'Title',
             border: OutlineInputBorder(),
           ),
-          validator: (value) => ValidationUtils.validateNotEmpty(value, 'Title'),
+          validator: (value) =>
+              ValidationUtils.validateNotEmpty(value, 'Title'),
         ),
         const SizedBox(height: 16),
         TextFormField(
@@ -474,7 +496,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) => ValidationUtils.validateInteger(value, 'Bedrooms'),
+                validator: (value) =>
+                    ValidationUtils.validateInteger(value, 'Bedrooms'),
               ),
             ),
             const SizedBox(width: 16),
@@ -486,7 +509,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) => ValidationUtils.validateInteger(value, 'Bathrooms'),
+                validator: (value) =>
+                    ValidationUtils.validateInteger(value, 'Bathrooms'),
               ),
             ),
           ],
@@ -526,7 +550,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                   labelText: 'Address',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => ValidationUtils.validateNotEmpty(value, 'Address'),
+                validator: (value) =>
+                    ValidationUtils.validateNotEmpty(value, 'Address'),
               ),
             ),
             const SizedBox(width: 8),
@@ -583,7 +608,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        
+
         // Existing images
         if (_existingImages.isNotEmpty) ...[
           const Text(
@@ -617,7 +642,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                               if (loadingProgress == null) return child;
                               return Center(
                                 child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
                                       ? loadingProgress.cumulativeBytesLoaded /
                                           loadingProgress.expectedTotalBytes!
                                       : null,
@@ -643,7 +669,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                               color: Colors.red,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                            child: const Icon(Icons.close,
+                                color: Colors.white, size: 16),
                           ),
                         ),
                       ),
@@ -655,7 +682,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
           ),
           const SizedBox(height: 16),
         ],
-        
+
         // New images
         if (_imageFiles.isNotEmpty) ...[
           const Text(
@@ -699,7 +726,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
                               color: Colors.red,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                            child: const Icon(Icons.close,
+                                color: Colors.white, size: 16),
                           ),
                         ),
                       ),
@@ -726,7 +754,7 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // Using TextFormField instead of QuillEditor
         TextFormField(
           controller: _descriptionController,
@@ -736,7 +764,8 @@ class _PropertyUploadScreenState extends State<PropertyUploadScreen> {
             alignLabelWithHint: true,
           ),
           maxLines: 10,
-          validator: (value) => ValidationUtils.validateNotEmpty(value, 'Description'),
+          validator: (value) =>
+              ValidationUtils.validateNotEmpty(value, 'Description'),
         ),
       ],
     );

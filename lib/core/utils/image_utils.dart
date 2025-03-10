@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dev_utils.dart';
 
 class ImageUtils {
   ImageUtils._(); // Private constructor
@@ -11,16 +12,19 @@ class ImageUtils {
     double? height,
     Widget? errorWidget,
   }) {
-    Widget errorPlaceholder = errorWidget ?? 
-      Container(
-        color: Colors.grey[300],
-        child: const Icon(Icons.broken_image, color: Colors.grey),
-      );
-    
+    // Process the URL through DevUtils to handle Firebase Storage URLs in dev mode
+    final processedUrl = DevUtils.getMockImageUrl(url);
+
+    Widget errorPlaceholder = errorWidget ??
+        Container(
+          color: Colors.grey[300],
+          child: const Icon(Icons.broken_image, color: Colors.grey),
+        );
+
     // Check if the URL starts with 'http' or 'https' for network images
-    if (url.startsWith('http')) {
+    if (processedUrl.startsWith('http')) {
       return Image.network(
-        url,
+        processedUrl,
         fit: fit,
         width: width,
         height: height,
@@ -29,17 +33,22 @@ class ImageUtils {
           return Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
                   : null,
             ),
           );
         },
-        errorBuilder: (_, __, ___) => errorPlaceholder,
+        errorBuilder: (_, error, stackTrace) {
+          debugPrint('Error loading image from $processedUrl: $error');
+          return errorPlaceholder;
+        },
       );
-    } 
-    
+    }
+
     // Check for file-based URLs (with dev mode placeholders)
-    else if (url.startsWith('file:/') || url.startsWith('/data/')) {
+    else if (processedUrl.startsWith('file:/') ||
+        processedUrl.startsWith('/data/')) {
       try {
         return Image.network(
           'https://via.placeholder.com/800x600?text=Local+File', // Use placeholder for file URLs
@@ -52,7 +61,7 @@ class ImageUtils {
         return errorPlaceholder;
       }
     }
-    
+
     // Fallback to a placeholder
     return Container(
       width: width,
@@ -60,5 +69,22 @@ class ImageUtils {
       color: Colors.grey[200],
       child: const Center(child: Text('No Image')),
     );
+  }
+
+  /// Get a proper placeholder image URL based on a category or room type
+  static String getPlaceholderUrl(String category) {
+    // Return different placeholder images based on property type/category
+    switch (category.toLowerCase()) {
+      case 'apartment':
+        return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+      case 'house':
+        return 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+      case 'villa':
+        return 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+      case 'office':
+        return 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+      default:
+        return 'https://images.unsplash.com/photo-1560184897-ae75f418493e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+    }
   }
 }

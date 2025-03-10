@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+// Admin imports
+import '../../../features/admin/presentation/providers/admin_provider.dart';
+import '../../../features/admin/presentation/wrappers/admin_wrapper.dart';
+
 // Auth imports
 import '../../features/auth/domain/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -361,13 +365,17 @@ class AppRouter {
         GoRoute(
           path: '/property/add',
           name: 'propertyAdd',
-          builder: (context, state) => const PropertyUploadScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const PropertyUploadScreen(),
+          ),
           // Form for adding new properties (for agents) (Admin Only)
         ),
         GoRoute(
           path: '/property/upload',
           name: 'propertyUpload',
-          builder: (context, state) => const PropertyUploadScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const PropertyUploadScreen(),
+          ),
           // Upload images and detailed info of properties (Admin Only)
         ),
         GoRoute(
@@ -375,7 +383,9 @@ class AppRouter {
           name: 'propertyEdit',
           builder: (context, state) {
             final id = state.pathParameters['id']!;
-            return PropertyEditScreen(propertyId: id);
+            return AdminWrapper(
+              child: PropertyEditScreen(propertyId: id),
+            );
           },
           // Edit existing property details (Admin Only)
         ),
@@ -384,25 +394,33 @@ class AppRouter {
         GoRoute(
           path: '/admin/dashboard',
           name: 'adminDashboard',
-          builder: (context, state) => const AdminDashboardScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const AdminDashboardScreen(),
+          ),
           // Overview of analytics, user stats (Admin Only)
         ),
         GoRoute(
           path: '/admin/users',
           name: 'adminUsers',
-          builder: (context, state) => const ManageUsersScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const ManageUsersScreen(),
+          ),
           // CRUD operations for managing app users (Admin Only)
         ),
         GoRoute(
           path: '/admin/properties',
           name: 'adminProperties',
-          builder: (context, state) => const ManagePropertiesScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const ManagePropertiesScreen(),
+          ),
           // Admin management of all property listings (Admin Only)
         ),
         GoRoute(
           path: '/admin/analytics',
           name: 'adminAnalytics',
-          builder: (context, state) => const AnalyticsScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const AnalyticsScreen(),
+          ),
           // Advanced analytics & reporting tools (Admin Only)
         ),
 
@@ -565,19 +583,25 @@ class AppRouter {
         GoRoute(
           path: '/property/add',
           name: 'propertyAdd',
-          builder: (context, state) => const PropertyUploadScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const PropertyUploadScreen(),
+          ),
         ),
         GoRoute(
           path: '/property/upload',
           name: 'propertyUpload',
-          builder: (context, state) => const PropertyUploadScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const PropertyUploadScreen(),
+          ),
         ),
         GoRoute(
           path: '/property/edit/:id',
           name: 'propertyEdit',
           builder: (context, state) {
             final id = state.pathParameters['id']!;
-            return PropertyEditScreen(propertyId: id);
+            return AdminWrapper(
+              child: PropertyEditScreen(propertyId: id),
+            );
           },
         ),
         GoRoute(
@@ -591,25 +615,33 @@ class AppRouter {
         GoRoute(
           path: '/admin/dashboard',
           name: 'adminDashboard',
-          builder: (context, state) => const AdminDashboardScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const AdminDashboardScreen(),
+          ),
           // Overview of analytics, user stats (Admin Only)
         ),
         GoRoute(
           path: '/admin/users',
           name: 'adminUsers',
-          builder: (context, state) => const ManageUsersScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const ManageUsersScreen(),
+          ),
           // CRUD operations for managing app users (Admin Only)
         ),
         GoRoute(
           path: '/admin/properties',
           name: 'adminProperties',
-          builder: (context, state) => const ManagePropertiesScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const ManagePropertiesScreen(),
+          ),
           // Admin management of all property listings (Admin Only)
         ),
         GoRoute(
           path: '/admin/analytics',
           name: 'adminAnalytics',
-          builder: (context, state) => const AnalyticsScreen(),
+          builder: (context, state) => AdminWrapper(
+            child: const AnalyticsScreen(),
+          ),
           // Advanced analytics & reporting tools (Admin Only)
         ),
         GoRoute(

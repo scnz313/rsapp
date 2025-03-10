@@ -92,100 +92,142 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  // Then, in the build method, modify the Consumer to avoid rebuilding the entire widget
   @override
   Widget build(BuildContext context) {
     debugPrint(
         'Building HomeScreen - Screen width: ${MediaQuery.of(context).size.width}');
-
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     // Use a simple Scaffold instead of AppScaffold when no nav bar is needed
     return AppScaffold(
       currentIndex: _selectedIndex,
       showAppBar: false, // We'll handle our own app bar
       showNavBar: widget.showNavBar, // Pass the showNavBar parameter
-      // Add actions with notification icon
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () => context.push('/notifications'),
-          color: Colors.white, // Make icon visible against primary color
-        ),
-      ],
       body: Column(
         children: [
-          // Refined header with better spacing and visual appeal
-          Material(
-            elevation: 2, // Slight elevation for better visual hierarchy
-            color: isDarkMode
-                ? Theme.of(context).scaffoldBackgroundColor
-                : AppColors.lightColorScheme.primary,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Status bar space
-                SizedBox(height: MediaQuery.of(context).padding.top),
-
-                // Search bar with improved spacing and size
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                  child: SizedBox(
-                    height: 45,
-                    child: SearchFilterBar(
-                      controller: _searchController,
-                      onSearchSubmitted: _handleSearch,
-                      onFilterTap: _showFilterBottomSheet,
+          // Updated header with new green theme
+          Container(
+            color: const Color(0xFF16A34A), // New green color
+            width: double.infinity,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0), // Updated padding
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Welcome back",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Consumer<AuthProvider>(
+                          builder: (context, authProvider, _) {
+                            final name = authProvider.user?.displayName
+                                    ?.split(' ')
+                                    .first ??
+                                'Guest';
+                            return Text(
+                              "Hello, $name",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-
-                // Filter chips with fixed height and better scrolling
-                if (!_isMapView)
-                  SizedBox(
-                    height: 42, // Fixed height
-                    child: ListView.builder(
-                      // Changed to ListView.builder for better performance
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: 6, // Number of filter items
-                      itemBuilder: (context, index) {
-                        // Generate chip based on index
-                        final filters = [
-                          'All',
-                          'For Sale',
-                          'For Rent',
-                          'Furnished',
-                          'Newest',
-                          'Price ↓'
-                        ];
-                        return _buildFilterChip(
-                            filters[index], _selectedFilter == filters[index]);
-                      },
-                    ),
-                  ),
-
-                // Curved bottom edge with shadow effect
-                Container(
-                  height: 16, // Slightly reduced height
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(16)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(13),
-                        offset: const Offset(0, -2),
-                        blurRadius: 4,
-                        spreadRadius: -2,
+                    Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(50.0),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(50.0),
+                        onTap: () => context.push('/notifications'),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.notifications_outlined,
+                            color: const Color(0xFF16A34A),
+                            size: 24.0,
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
+
+          // Search bar with improved spacing and visual design
+          Container(
+            color: const Color(0xFF16A34A),
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 24.0),
+              child: Container(
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: SearchFilterBar(
+                  controller: _searchController,
+                  onSearchSubmitted: _handleSearch,
+                  onFilterTap: _showFilterBottomSheet,
+                ),
+              ),
+            ),
+          ),
+
+          // Filter chips with enhanced styling and spacing
+          if (!_isMapView)
+            Container(
+              color: const Color(0xFF16A34A),
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 16.0),
+                child: SizedBox(
+                  height: 38,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: 6,
+                    itemBuilder: (context, index) {
+                      final filters = [
+                        'All',
+                        'For Sale',
+                        'For Rent',
+                        'Furnished',
+                        'Newest',
+                        'Price ↓'
+                      ];
+                      return _buildFilterChip(
+                        filters[index],
+                        _selectedFilter == filters[index],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
 
           // Main content
           Expanded(child: _buildMainContent()),
@@ -195,41 +237,35 @@ class _HomeScreenState extends State<HomeScreen>
         onPressed: () => _toggleViewMode(),
         icon: Icon(_isMapView ? Icons.view_list_rounded : Icons.map_rounded),
         label: Text(_isMapView ? 'List' : 'Map'),
-        backgroundColor: AppColors.lightColorScheme.primary,
+        backgroundColor: const Color(0xFF16A34A),
       ),
     );
   }
 
-  // Updated filter chip with more consistent sizing
+  // Updated filter chip with more consistent sizing and improved visuals
   Widget _buildFilterChip(String label, bool isSelected) {
     return Container(
-      margin: const EdgeInsets.only(right: 8, top: 4, bottom: 4),
-      width: label.length > 6 ? 90 : 70, // Fixed width based on label length
-      child: GestureDetector(
+      margin: const EdgeInsets.only(right: 12),
+      child: InkWell(
         onTap: () => _updateFilter(label),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 8, vertical: 6), // Reduced horizontal padding
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.white.withAlpha(51),
-            borderRadius: BorderRadius.circular(16),
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? Colors.white : Colors.white.withAlpha(77),
-              width: 1,
+              color: isSelected ? const Color(0xFF16A34A) : Colors.transparent,
+              width: 1.5,
             ),
           ),
-          alignment: Alignment.center, // Center the text
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected
-                  ? AppColors.lightColorScheme.primary
-                  : Colors.white,
+              color: isSelected ? const Color(0xFF16A34A) : Colors.white,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 12, // Smaller text
+              fontSize: 13,
             ),
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center, // Center text alignment
           ),
         ),
       ),

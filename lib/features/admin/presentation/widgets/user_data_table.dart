@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../providers/admin_provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/models/admin_user.dart';
@@ -8,7 +7,7 @@ import '../../domain/models/admin_user.dart';
 class UserDataTable extends StatefulWidget {
   final List<AdminUser> users;
   final Function(AdminUser user, bool isAdmin) onRoleChanged;
-  
+
   const UserDataTable({
     Key? key,
     required this.users,
@@ -24,7 +23,7 @@ class _UserDataTableState extends State<UserDataTable> {
   int _sortColumnIndex = 0;
   bool _sortAscending = true;
   List<AdminUser> _sortedUsers = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -32,26 +31,31 @@ class _UserDataTableState extends State<UserDataTable> {
     _sortedUsers = List.from(widget.users);
     _sortUsers();
   }
-  
+
   @override
   void didUpdateWidget(UserDataTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.users.length != widget.users.length) {
+    if (oldWidget.users != widget.users) {
       _selected = List.generate(widget.users.length, (index) => false);
       _sortedUsers = List.from(widget.users);
       _sortUsers();
     }
   }
-  
+
   bool get _hasSelection => _selected.contains(true);
-  
-  void _toggleAll(bool? value) {
-    if (value == null) return;
+
+  void _sort(int columnIndex) {
     setState(() {
-      _selected = List.generate(widget.users.length, (index) => value);
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+      _sortUsers();
     });
   }
-  
+
   void _sortUsers() {
     _sortedUsers.sort((a, b) {
       switch (_sortColumnIndex) {
@@ -63,12 +67,10 @@ class _UserDataTableState extends State<UserDataTable> {
           return _sortAscending
               ? a.email.compareTo(b.email)
               : b.email.compareTo(a.email);
-        case 2: // Last Active
-          if (a.lastActive == null) return _sortAscending ? 1 : -1;
-          if (b.lastActive == null) return _sortAscending ? -1 : 1;
+        case 2: // Status
           return _sortAscending
-              ? a.lastActive!.compareTo(b.lastActive!)
-              : b.lastActive!.compareTo(a.lastActive!);
+              ? a.status.compareTo(b.status)
+              : b.status.compareTo(a.status);
         case 3: // Admin
           return _sortAscending
               ? (a.isAdmin ? 1 : 0).compareTo(b.isAdmin ? 1 : 0)
@@ -79,57 +81,222 @@ class _UserDataTableState extends State<UserDataTable> {
     });
   }
 
-  void _sort<T>(int columnIndex, bool ascending) {
-    setState(() {
-      _sortColumnIndex = columnIndex;
-      _sortAscending = ascending;
-      _sortUsers();
-    });
-  }
-
-  String _formatTimestamp(dynamic timestamp) {
-    if (timestamp == null) return 'Never';
-    try {
-      final dateTime = timestamp.toDate();
-      return DateFormat('MMM d, y h:mm a').format(dateTime);
-    } catch (e) {
-      return 'Invalid date';
-    }
-  }
-  
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_hasSelection)
-          _buildSelectionActions()
-        else
-          _buildTableHeader(),
+        _hasSelection ? _buildSelectionActions() : _buildTableHeader(),
         const SizedBox(height: 8),
         Expanded(
-          child: Card(
-            elevation: 2,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                child: DataTable(
-                  sortColumnIndex: _sortColumnIndex,
-                  sortAscending: _sortAscending,
-                  columnSpacing: 24,
-                  dataRowMinHeight: 60,
-                  columns: _buildColumns(),
-                  rows: _buildRows(),
-                  showCheckboxColumn: true,
-                ),
-              ),
-            ),
-          ),
+          child: _buildUserTableContainer(),
         ),
       ],
     );
   }
-  
+
+  Widget _buildUserTableContainer() {
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTableHeaders(),
+          Expanded(
+            child: _sortedUsers.isEmpty
+                ? const Center(child: Text("No users available"))
+                : SingleChildScrollView(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columnSpacing: 24,
+                        headingRowHeight: 0, // Headers are already shown above
+                        dataRowMinHeight: 60,
+                        dataRowMaxHeight: 60,
+                        columns: const [
+                          DataColumn(label: SizedBox(width: 50)),
+                          DataColumn(label: SizedBox(width: 200)),
+                          DataColumn(label: SizedBox(width: 250)),
+                          DataColumn(label: SizedBox(width: 120)),
+                          DataColumn(label: SizedBox(width: 120)),
+                          DataColumn(label: SizedBox(width: 120)),
+                        ],
+                        rows: _buildDataRows(),
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<DataRow> _buildDataRows() {
+    return List.generate(
+      _sortedUsers.length,
+      (index) {
+        final user = _sortedUsers[index];
+        return DataRow(
+          color: WidgetStatePropertyAll<Color?>(
+            _selected[index]
+                ? Colors.blue.withValues(
+                    alpha: 26.0, red: 33.0, green: 150.0, blue: 243.0)
+                : null,
+          ),
+          cells: [
+            DataCell(
+              Checkbox(
+                value: _selected[index],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selected[index] = value;
+                    });
+                  }
+                },
+              ),
+            ),
+            DataCell(
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundImage: user.photoURL != null
+                        ? NetworkImage(user.photoURL!)
+                        : null,
+                    child: user.photoURL == null
+                        ? Text(
+                            user.displayName.isNotEmpty
+                                ? user.displayName[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(fontSize: 12),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      user.displayName.isNotEmpty
+                          ? user.displayName
+                          : 'No Name',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            DataCell(
+              Text(
+                user.email,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            DataCell(_buildStatusBadge(user.status)),
+            DataCell(Text(user.isAdmin ? 'Admin' : 'User')),
+            DataCell(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Switch(
+                    value: user.isAdmin,
+                    onChanged: (value) =>
+                        _showRoleConfirmationDialog(user, value),
+                  ),
+                  _buildStatusToggleButton(user),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTableHeaders() {
+    return Container(
+      color: Colors.grey.shade200,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 50,
+                child: Checkbox(
+                  value: _selected.isNotEmpty && _selected.every((s) => s),
+                  tristate:
+                      _selected.contains(true) && _selected.contains(false),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selected = List.generate(
+                            widget.users.length, (index) => value);
+                      });
+                    }
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 200,
+                child: _buildHeaderCell("Name", 0),
+              ),
+              SizedBox(
+                width: 250,
+                child: _buildHeaderCell("Email", 1),
+              ),
+              SizedBox(
+                width: 120,
+                child: _buildHeaderCell("Status", 2),
+              ),
+              SizedBox(
+                width: 120,
+                child: _buildHeaderCell("Role", 3),
+              ),
+              const SizedBox(width: 120),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String title, int columnIndex) {
+    return InkWell(
+      onTap: () => _sort(columnIndex),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            if (_sortColumnIndex == columnIndex)
+              Icon(
+                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 16,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusToggleButton(AdminUser user) {
+    return IconButton(
+      icon: Icon(
+        user.status == 'active' ? Icons.block : Icons.check_circle,
+        size: 18,
+        color: user.status == 'active' ? Colors.red : Colors.green,
+      ),
+      onPressed: () => _toggleUserStatus(user),
+      tooltip: user.status == 'active' ? 'Block' : 'Activate',
+    );
+  }
+
   Widget _buildTableHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -148,14 +315,17 @@ class _UserDataTableState extends State<UserDataTable> {
       ],
     );
   }
-  
+
   Widget _buildSelectionActions() {
     final selectedCount = _selected.where((s) => s).length;
-    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.lightColorScheme.primary.withOpacity(0.1),
+        color: AppColors.lightColorScheme.primary.withValues(
+            alpha: 26.0,
+            red: AppColors.lightColorScheme.primary.red.toDouble(),
+            green: AppColors.lightColorScheme.primary.green.toDouble(),
+            blue: AppColors.lightColorScheme.primary.blue.toDouble()),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -183,7 +353,8 @@ class _UserDataTableState extends State<UserDataTable> {
             icon: const Icon(Icons.close),
             onPressed: () {
               setState(() {
-                _selected = List.generate(widget.users.length, (index) => false);
+                _selected =
+                    List.generate(widget.users.length, (index) => false);
               });
             },
             tooltip: 'Clear selection',
@@ -192,250 +363,148 @@ class _UserDataTableState extends State<UserDataTable> {
       ),
     );
   }
-  
-  List<DataColumn> _buildColumns() {
-    return [
-      DataColumn(
-        label: Checkbox(
-          value: _selected.every((element) => element),
-          tristate: _selected.contains(true) && _selected.contains(false),
-          onChanged: _toggleAll,
-        ),
-      ),
-      DataColumn(
-        label: const Text('Name'),
-        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
-      ),
-      DataColumn(
-        label: const Text('Email'),
-        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
-      ),
-      DataColumn(
-        label: const Text('Last Active'),
-        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
-      ),
-      DataColumn(
-        label: const Text('Admin'),
-        onSort: (columnIndex, ascending) => _sort(columnIndex, ascending),
-      ),
-      const DataColumn(label: Text('Status')),
-      const DataColumn(label: Text('Join Date')),
-      const DataColumn(label: Text('Actions')),
-    ];
-  }
-  
-  List<DataRow> _buildRows() {
-    return List.generate(
-      _sortedUsers.length,
-      (index) {
-        final user = _sortedUsers[index];
-        
-        return DataRow(
-          selected: _selected[index],
-          onSelectChanged: (selected) {
-            if (selected != null) {
-              setState(() {
-                _selected[index] = selected;
-              });
-            }
-          },
-          cells: [
-            DataCell(
-              Checkbox(
-                value: _selected[index],
-                onChanged: (selected) {
-                  if (selected != null) {
-                    setState(() {
-                      _selected[index] = selected;
-                    });
-                  }
-                },
-              ),
-            ),
-            DataCell(
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundImage: user.photoURL != null
-                        ? NetworkImage(user.photoURL!)
-                        : null,
-                    child: user.photoURL == null
-                        ? Text(user.displayName.isNotEmpty
-                            ? user.displayName[0].toUpperCase()
-                            : '?')
-                        : null,
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      user.displayName.isNotEmpty
-                          ? user.displayName
-                          : 'No Name',
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            DataCell(Text(user.email)),
-            DataCell(Text(_formatTimestamp(user.lastActive))),
-            DataCell(
-              user.isAdmin
-                  ? const Chip(
-                      label: Text(
-                        'Admin',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                      backgroundColor: Colors.green,
-                      padding: EdgeInsets.zero,
-                    )
-                  : const Text('User'),
-            ),
-            DataCell(_buildStatusBadge(user.status)),
-            DataCell(Text(user.joinDate)),
-            DataCell(
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 18),
-                    onPressed: () {
-                      _showUserDetailsDialog(user);
-                    },
-                    tooltip: 'Edit',
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      user.status == 'active' ? Icons.block : Icons.check_circle,
-                      size: 18,
-                      color: user.status == 'active' ? Colors.red : Colors.green,
-                    ),
-                    onPressed: () {
-                      _toggleUserStatus(user);
-                    },
-                    tooltip: user.status == 'active' ? 'Disable' : 'Enable',
-                  ),
-                  Switch(
-                    value: user.isAdmin,
-                    onChanged: (value) {
-                      // Show confirmation dialog
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(value ? 'Grant Admin Access' : 'Revoke Admin Access'),
-                          content: Text(
-                            value
-                                ? 'Are you sure you want to grant admin access to ${user.displayName}?'
-                                : 'Are you sure you want to revoke admin access from ${user.displayName}?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                widget.onRoleChanged(user, value);
-                              },
-                              child: const Text('Confirm'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-  
+
   Widget _buildStatusBadge(String status) {
-    Color color;
+    Color baseColor;
     String label;
-    
     switch (status) {
       case 'active':
-        color = Colors.green;
+        baseColor = Colors.green;
         label = 'Active';
         break;
       case 'disabled':
-        color = Colors.red;
+        baseColor = Colors.red;
         label = 'Disabled';
         break;
       case 'pending':
-        color = Colors.orange;
+        baseColor = Colors.orange;
         label = 'Pending';
         break;
       default:
-        color = Colors.grey;
-        label = 'Unknown';
+        baseColor = Colors.grey;
+        label = status.isEmpty ? 'Unknown' : status;
     }
-    
+
+    final color = baseColor.withValues(
+        alpha: 26.0,
+        red: baseColor.red.toDouble(),
+        green: baseColor.green.toDouble(),
+        blue: baseColor.blue.toDouble());
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color),
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: baseColor),
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 12),
+        style: TextStyle(color: baseColor, fontSize: 12),
+        textAlign: TextAlign.center,
       ),
     );
   }
-  
+
   List<AdminUser> _getSelectedUsers() {
     final List<AdminUser> selectedUsers = [];
-    
-    for (int i = 0; i < widget.users.length; i++) {
+    for (int i = 0; i < _sortedUsers.length; i++) {
       if (_selected[i]) {
-        selectedUsers.add(widget.users[i]);
+        selectedUsers.add(_sortedUsers[i]);
       }
     }
-    
     return selectedUsers;
   }
-  
-  void _showUserDetailsDialog(AdminUser user) {
+
+  void _showRoleConfirmationDialog(AdminUser user, bool makeAdmin) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Edit User: ${user.displayName ?? user.email}'),
-        content: const Text('User editing functionality will be implemented here.'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(makeAdmin ? 'Grant Admin Access' : 'Revoke Admin Access'),
+        content: Text(
+          makeAdmin
+              ? 'Are you sure you want to grant admin access to ${user.displayName}?'
+              : 'Are you sure you want to revoke admin access from ${user.displayName}?',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              widget.onRoleChanged(user, makeAdmin);
+            },
+            child: const Text('Confirm'),
           ),
         ],
       ),
     );
   }
-  
+
   void _toggleUserStatus(AdminUser user) {
     final adminProvider = Provider.of<AdminProvider>(context, listen: false);
     final newStatus = user.status == 'active' ? 'disabled' : 'active';
-    
-    adminProvider.updateUserStatus(user.uid, newStatus);
-  }
-  
-  void _showRoleBulkUpdateDialog(List<AdminUser> users) {
-    bool makeAdmin = false;
-    
+
+    // Show confirmation dialog before changing status
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
+      builder: (dialogContext) => AlertDialog(
+        title: Text(newStatus == 'active' ? 'Activate User' : 'Block User'),
+        content: Text(
+            'Are you sure you want to ${newStatus == 'active' ? 'activate' : 'block'} ${user.displayName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+
+              // Show loading indicator
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Updating user status...'),
+                duration: Duration(seconds: 1),
+              ));
+
+              try {
+                await adminProvider.updateUserStatus(user.uid, newStatus);
+
+                if (!mounted) return;
+
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                      'User ${newStatus == 'active' ? 'activated' : 'blocked'} successfully'),
+                  backgroundColor: Colors.green,
+                ));
+              } catch (e) {
+                if (!mounted) return;
+
+                // Show error message
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content:
+                      Text('Failed to update user status: ${e.toString()}'),
+                  backgroundColor: Colors.red,
+                ));
+              }
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRoleBulkUpdateDialog(List<AdminUser> users) {
+    bool makeAdmin = false;
+    final adminProvider = Provider.of<AdminProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setState) {
           return AlertDialog(
             title: const Text('Update User Roles'),
             content: Column(
@@ -458,14 +527,14 @@ class _UserDataTableState extends State<UserDataTable> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () {
-                  final adminProvider = Provider.of<AdminProvider>(context, listen: false);
-                  adminProvider.bulkUpdateUserRoles(users, makeAdmin);
-                  Navigator.pop(context);
+                  final userIds = users.map((u) => u.uid).toList();
+                  adminProvider.bulkUpdateUserRoles(userIds, makeAdmin);
+                  Navigator.pop(dialogContext);
                 },
                 child: const Text('Update'),
               ),
@@ -475,52 +544,59 @@ class _UserDataTableState extends State<UserDataTable> {
       ),
     );
   }
-  
+
   void _showExportDialog(List<AdminUser> users) {
+    late BuildContext dialogContext;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Export Users'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Ready to export ${users.length} users'),
-            const SizedBox(height: 16),
-            const Text('Format:'),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.description),
-                  label: const Text('CSV'),
-                  onPressed: () {
-                    Provider.of<AdminProvider>(context, listen: false)
-                        .exportUsersToCSV(users);
-                    Navigator.pop(context);
-                  },
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.code),
-                  label: const Text('JSON'),
-                  onPressed: () {
-                    Provider.of<AdminProvider>(context, listen: false)
-                        .exportUsersToJSON(users);
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
+      builder: (ctx) {
+        dialogContext = ctx;
+        return AlertDialog(
+          title: const Text('Export Users'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Ready to export ${users.length} users'),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.description),
+                label: const Text('Export to CSV'),
+                onPressed: () => _handleExport(dialogContext, users),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
+        );
+      },
     );
+  }
+
+  Future<void> _handleExport(
+      BuildContext dialogContext, List<AdminUser> users) async {
+    final adminProvider = Provider.of<AdminProvider>(context, listen: false);
+    Navigator.pop(dialogContext);
+
+    try {
+      final csvData = await adminProvider.exportUsersToCSV();
+      if (!mounted) return;
+
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      if (csvData.isNotEmpty) {
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Users exported to CSV')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error exporting users: $e')),
+      );
+    }
   }
 }

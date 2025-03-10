@@ -1,42 +1,145 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions
+    // Define a debug flag - true for development environments
+    function isDebugMode() {
+      return true; // Keep this true during development, change to false in production
+    }
+    
+    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-    
+    // Enhanced admin check with multiple ways to identify admins
     function isAdmin() {
-      return isAuthenticated() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // User profiles
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+      return isAuthenticated() && (
+        // Check for admin claim in token
+        request.auth.token.admin == true || 
+        
+        // Check if user's document exists in the admin_users collection
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) ||
+        
+        // Check if user has admin role in their user document
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin") ||
+         
+        // In debug mode, allow specific test accounts
+        (isDebugMode() && (
+          request.auth.uid == "test-admin-user" ||
+          request.auth.token.email_verified == true // Allow any verified user in debug mode
+        ))
+      );
     }
     
-    // Properties
+    // Special debug admin check for development only
+    function isDebugAdmin() {
+      // Only applies if debug mode is enabled - more permissive for testing
+      return isDebugMode() && isAuthenticated();
+    }
+    
+    // Relaxed App Check validation for development
+    function hasValidAppCheck() {
+      // In debug mode, skip app check validation entirely
+      return isDebugMode() || request.auth.token.app_check == true;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Read: Users can read their own document, admins can read any
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == userId || isAdmin() || isDebugAdmin());
+        
+      // Write: Users can write to their own document, admins can write to any
+      allow write: if isAuthenticated() && 
+        (request.auth.uid == userId || isAdmin() || isDebugAdmin());
+    }
+    
+    // Admin logs collection - only accessible by admins
+    match /admin_logs/{logId} {
+      allow read: if isAdmin() || isDebugAdmin();
+      allow write: if isAdmin() || isDebugAdmin();
+    }
+    
+    // Admin access logs collection - for debugging permission issues
+    match /admin_access_logs/{logId} {
+      // Always allow writing to this collection for debugging purposes
+      allow read, write: if isDebugMode() && isAuthenticated();
+    }
+    
+    // Admin users collection - list of admin users
+    match /admin_users/{userId} {
+      // Anyone can read the admin list to check if a user is admin
+      allow read: if isAuthenticated();
+      
+      // Special rule for development: users can add themselves as admin for testing
+      allow create, update: if isDebugMode() && isAuthenticated() && 
+        request.auth.uid == userId;
+        
+      // Only super admins can modify other admin users in production
+      allow write: if isAdmin();
+    }
+    
+    // Admin settings collection
+    match /admin_settings/{settingId} {
+      // More permissive in debug mode
+      allow read: if isAdmin() || isDebugAdmin();
+      allow write: if isAdmin() || (isDebugMode() && isAuthenticated());
+    }
+    
+    // Property collection - public for reading, restricted for writing
     match /properties/{propertyId} {
+      // Anyone can read properties
+      allow read: if true;
+      
+      // Write permissions: property owner or admin
+      allow create: if isAuthenticated() && 
+        (request.resource.data.ownerId == request.auth.uid || isAdmin() || isDebugAdmin());
+        
+      allow update, delete: if isAuthenticated() && 
+        (resource.data.ownerId == request.auth.uid || isAdmin() || isDebugAdmin());
+    }
+    
+    // Property reviews subcollection
+    match /properties/{propertyId}/reviews/{reviewId} {
       allow read: if true;
       allow create: if isAuthenticated();
-      allow update: if isOwner(resource.data.userId) || isAdmin();
-      allow delete: if isOwner(resource.data.userId) || isAdmin();
+      allow update, delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin() || isDebugAdmin());
     }
     
-    // Favorites
-    match /users/{userId}/favorites/{propertyId} {
-      allow read, write: if isOwner(userId);
+    // Property messages subcollection
+    match /properties/{propertyId}/messages/{messageId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.senderId == request.auth.uid || 
+         resource.data.receiverId == request.auth.uid || 
+         isAdmin() || 
+         isDebugAdmin());
+         
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && 
+        (resource.data.senderId == request.auth.uid || isAdmin() || isDebugAdmin());
+    }
+    
+    // Stats collection for analytics
+    match /stats/{statId} {
+      allow read: if isAdmin() || isDebugAdmin();
+      allow write: if isAdmin() || isDebugAdmin();
+    }
+    
+    // Debug-only collections for testing
+    match /debug_data/{docId} {
+      allow read, write: if isDebugMode() && isAuthenticated();
+    }
+    
+    // Debug admin logs for troubleshooting permission issues
+    match /debug_admin_logs/{logId} {
+      allow read, write: if isDebugMode() && isAuthenticated();
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

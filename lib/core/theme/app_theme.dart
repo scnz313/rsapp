@@ -7,7 +7,7 @@ class AppTheme {
     primaryColor: AppColors.primarySeed,
     scaffoldBackgroundColor: Colors.white,
     colorScheme: AppColors.lightColorScheme,
-    
+
     // AppBar theme
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.lightColorScheme.primary,
@@ -24,7 +24,7 @@ class AppTheme {
         size: 26,
       ),
     ),
-    
+
     // Card theme
     cardTheme: CardTheme(
       color: Colors.white,
@@ -35,7 +35,7 @@ class AppTheme {
       ),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
     ),
-    
+
     // Elevated Button theme
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -53,7 +53,7 @@ class AppTheme {
         ),
       ),
     ),
-    
+
     // Bottom Navigation bar theme
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
@@ -73,7 +73,7 @@ class AppTheme {
       ),
       elevation: 8,
     ),
-    
+
     // Floating Action Button theme
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: AppColors.lightColorScheme.primary,
@@ -84,7 +84,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(16),
       ),
     ),
-    
+
     // Input Decoration theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -108,7 +108,7 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-    
+
     // Icon theme
     iconTheme: IconThemeData(
       color: AppColors.lightColorScheme.primary,
@@ -160,7 +160,7 @@ class AppTheme {
         color: AppColors.textLight,
       ),
     ),
-    
+
     // Chip theme
     chipTheme: ChipThemeData(
       backgroundColor: Colors.grey[200],
@@ -174,14 +174,14 @@ class AppTheme {
         borderRadius: BorderRadius.circular(16),
       ),
     ),
-    
+
     // Divider theme
     dividerTheme: DividerThemeData(
       color: Colors.grey[300],
       thickness: 1,
       space: 24,
     ),
-    
+
     // Checkbox theme
     checkboxTheme: CheckboxThemeData(
       fillColor: MaterialStateProperty.resolveWith<Color>((states) {
@@ -205,7 +205,7 @@ class AppTheme {
     primaryColor: AppColors.primarySeed,
     scaffoldBackgroundColor: AppColors.surfaceDark,
     colorScheme: AppColors.darkColorScheme,
-    
+
     // Dark theme components
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.surfaceDark,
@@ -215,7 +215,7 @@ class AppTheme {
         size: 26,
       ),
     ),
-    
+
     cardTheme: CardTheme(
       color: const Color(0xFF1E1E1E),
       elevation: 4,
@@ -225,18 +225,18 @@ class AppTheme {
       ),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
     ),
-    
+
     // Other dark theme customizations
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: AppColors.lightColorScheme.primary,
       foregroundColor: Colors.white,
     ),
-    
+
     iconTheme: const IconThemeData(
       color: Colors.white,
       size: 24,
     ),
-    
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.lightColorScheme.primary,

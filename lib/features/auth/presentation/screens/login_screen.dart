@@ -19,7 +19,19 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = false;
   bool _isSubmitting = false;
-  
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize _rememberMe from the AuthProvider on screen load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      setState(() {
+        _rememberMe = authProvider.rememberMe;
+      });
+    });
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -32,17 +44,18 @@ class _LoginScreenState extends State<LoginScreen> {
     DebugLogger.info('Building LoginScreen UI');
     final Size screenSize = MediaQuery.of(context).size;
     final bool isSmallScreen = screenSize.width < 380;
-    
+
     return Scaffold(
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           if (authProvider.isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              DebugLogger.info('User is authenticated, navigating to home screen');
+              DebugLogger.info(
+                  'User is authenticated, navigating to home screen');
               context.go('/home');
             });
           }
-          
+
           return Container(
             // Remove fixed height to prevent keyboard issues
             decoration: BoxDecoration(
@@ -66,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SizedBox(height: screenSize.height * 0.05),
-                      
+
                       // Logo container
                       Center(
                         child: Container(
@@ -90,9 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      
+
                       SizedBox(height: screenSize.height * 0.03),
-                      
+
                       const Text(
                         'Welcome Back',
                         textAlign: TextAlign.center,
@@ -102,9 +115,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       const Text(
                         'Sign in to continue',
                         textAlign: TextAlign.center,
@@ -113,9 +126,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white70,
                         ),
                       ),
-                      
+
                       SizedBox(height: screenSize.height * 0.04),
-                      
+
                       // Login card
                       Card(
                         elevation: 8,
@@ -143,15 +156,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter your email';
                                     }
-                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                    if (!RegExp(
+                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                        .hasMatch(value)) {
                                       return 'Please enter a valid email';
                                     }
                                     return null;
                                   },
                                 ),
-                                
                                 const SizedBox(height: 16),
-                                
                                 TextFormField(
                                   controller: _passwordController,
                                   decoration: InputDecoration(
@@ -161,8 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     border: const OutlineInputBorder(),
                                     suffixIcon: IconButton(
                                       icon: Icon(
-                                        _obscurePassword 
-                                            ? Icons.visibility_outlined 
+                                        _obscurePassword
+                                            ? Icons.visibility_outlined
                                             : Icons.visibility_off_outlined,
                                       ),
                                       onPressed: () {
@@ -183,11 +196,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     return null;
                                   },
                                 ),
-                                
                                 const SizedBox(height: 8),
-                                
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
@@ -199,8 +211,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                               setState(() {
                                                 _rememberMe = value ?? false;
                                               });
+                                              // Update the provider's remember me preference
+                                              authProvider
+                                                  .setRememberMe(_rememberMe);
                                             },
-                                            activeColor: AppColors.lightColorScheme.primary,
+                                            activeColor: AppColors
+                                                .lightColorScheme.primary,
                                           ),
                                         ),
                                         Text(
@@ -211,7 +227,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       ],
                                     ),
-                                    
                                     TextButton(
                                       onPressed: () {
                                         context.push('/reset-password');
@@ -220,28 +235,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                         'Forgot Password?',
                                         style: TextStyle(
                                           fontSize: isSmallScreen ? 12 : 14,
-                                          color: AppColors.lightColorScheme.primary,
+                                          color: AppColors
+                                              .lightColorScheme.primary,
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                
                                 const SizedBox(height: 24),
-                                
                                 ElevatedButton(
-                                  onPressed: _isSubmitting 
-                                      ? null 
-                                      : () => _handleEmailPasswordSignIn(context, authProvider),
+                                  onPressed: _isSubmitting
+                                      ? null
+                                      : () => _handleEmailPasswordSignIn(
+                                          context, authProvider),
                                   style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    backgroundColor: AppColors.lightColorScheme.primary,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    backgroundColor:
+                                        AppColors.lightColorScheme.primary,
                                     foregroundColor: Colors.white,
                                     elevation: 2,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    disabledBackgroundColor: Colors.grey.shade300,
+                                    disabledBackgroundColor:
+                                        Colors.grey.shade300,
                                   ),
                                   child: _isSubmitting
                                       ? const SizedBox(
@@ -260,15 +278,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                 ),
-
                                 const SizedBox(height: 16),
-    
                                 OutlinedButton.icon(
                                   onPressed: () {
                                     _handleGoogleSignIn(context);
                                   },
                                   style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     backgroundColor: Colors.white,
                                     foregroundColor: Colors.black87,
                                     side: const BorderSide(color: Colors.grey),
@@ -294,9 +311,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Sign up link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -332,11 +349,12 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  
+
   // Updated method to handle email/password sign in with better error handling
-  void _handleEmailPasswordSignIn(BuildContext context, AuthProvider authProvider) async {
+  void _handleEmailPasswordSignIn(
+      BuildContext context, AuthProvider authProvider) async {
     DebugLogger.info('Login button pressed');
-    
+
     // Validate form
     if (!_formKey.currentState!.validate()) {
       DebugLogger.info('Form validation failed');
@@ -349,26 +367,30 @@ class _LoginScreenState extends State<LoginScreen> {
     // Get values
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-    
+
     DebugLogger.info('Attempting to sign in with email: $email');
-    
+
     try {
       // Set loading state
       setState(() {
         _isSubmitting = true;
       });
-      
-      // Attempt sign in
-      final success = await authProvider.signIn(email, password, rememberMe: _rememberMe);
-      
+
+      // Attempt sign in with remember me preference
+      final success = await authProvider.signIn(
+        email,
+        password,
+        rememberMe: _rememberMe,
+      );
+
       if (!mounted) return;
-      
+
       if (success) {
         DebugLogger.info('Email/password sign in successful');
         // Navigation will happen automatically via the Consumer
       } else {
         DebugLogger.info('Email/password sign in failed');
-        
+
         // Get specific error message from provider or show a friendly default
         final errorMessage = _getFriendlyErrorMessage(authProvider.error);
         _showErrorSnackBar(context, errorMessage);
@@ -385,13 +407,13 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-  
+
   // New helper method to transform Firebase error messages into user-friendly messages
   String _getFriendlyErrorMessage(String? error) {
     if (error == null) return 'Sign in failed. Please try again.';
-    
+
     // Convert Firebase error messages to user-friendly messages
-    if (error.contains('invalid-credential') || 
+    if (error.contains('invalid-credential') ||
         error.contains('wrong-password') ||
         error.contains('user-not-found')) {
       return 'Invalid email or password. Please try again.';
@@ -406,10 +428,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (error.contains('expired')) {
       return 'Authentication session expired. Please try again.';
     }
-    
+
     return 'Authentication failed: $error';
   }
-  
+
   // Improved error SnackBar with action button
   void _showErrorSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -428,11 +450,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  
+
   // Google sign in handler
   void _handleGoogleSignIn(BuildContext context) async {
     DebugLogger.info('CLICK: GoogleSignInButton - Google Sign In Attempt');
-    
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     try {
       final success = await authProvider.signInWithGoogle();

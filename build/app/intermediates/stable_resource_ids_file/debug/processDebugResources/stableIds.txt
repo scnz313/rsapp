@@ -1,4 +1,5 @@
-com.example.rsapp:xml/image_share_filepaths = 0x7f110001
+com.example.rsapp:xml/image_share_filepaths = 0x7f110002
+com.example.rsapp:xml/flutter_share_file_paths = 0x7f110001
 com.example.rsapp:xml/flutter_image_picker_file_paths = 0x7f110000
 com.example.rsapp:styleable/ViewStubCompat = 0x7f100045
 com.example.rsapp:styleable/View = 0x7f100043

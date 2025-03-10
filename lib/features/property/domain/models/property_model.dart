@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum PropertyType { house, apartment, condo, townhouse, land, commercial }
+
 enum PropertyStatus { available, pending, sold, rented }
 
 class PropertyOwner {
@@ -56,6 +57,12 @@ class PropertyModel {
   final PropertyOwner? owner;
   final String? ownerId;
   final bool featured;
+  final List<String>? amenities; // Added amenities field
+  final bool isApproved; // Changed from getter to property
+  final DateTime? lastReviewedAt; // Track when admin last reviewed it
+  final String? reviewedBy; // Track which admin reviewed it
+  final String? adminNotes; // Field for admin notes/comments
+  final Map<String, dynamic>? moderationData; // Store moderation history/data
 
   PropertyModel({
     this.id,
@@ -78,6 +85,12 @@ class PropertyModel {
     this.owner,
     this.ownerId,
     this.featured = false,
+    this.amenities,
+    this.isApproved = true, // Default to true
+    this.lastReviewedAt,
+    this.reviewedBy,
+    this.adminNotes,
+    this.moderationData,
   });
 
   // Updated to support direct conversion from Firestore document
@@ -102,8 +115,17 @@ class PropertyModel {
       propertyType: data['propertyType'] ?? 'House',
       listingType: data['listingType'] ?? 'Sale',
       ownerId: data['ownerId'],
-      owner: data['owner'] != null ? PropertyOwner.fromMap(data['owner']) : null,
+      owner:
+          data['owner'] != null ? PropertyOwner.fromMap(data['owner']) : null,
       featured: data['featured'] ?? false,
+      amenities: (data['amenities'] as List?)
+          ?.map((e) => e as String)
+          .toList(), // Parse amenities
+      isApproved: data['isApproved'] ?? true,
+      lastReviewedAt: (data['lastReviewedAt'] as Timestamp?)?.toDate(),
+      reviewedBy: data['reviewedBy'],
+      adminNotes: data['adminNotes'],
+      moderationData: data['moderationData'] as Map<String, dynamic>?,
     );
   }
 
@@ -111,8 +133,9 @@ class PropertyModel {
   static PropertyType _parsePropertyType(String typeStr) {
     try {
       return PropertyType.values.firstWhere(
-        (e) => e.toString() == 'PropertyType.$typeStr' || 
-               e.toString().split('.').last.toLowerCase() == typeStr.toLowerCase(),
+        (e) =>
+            e.toString() == 'PropertyType.$typeStr' ||
+            e.toString().split('.').last.toLowerCase() == typeStr.toLowerCase(),
         orElse: () => PropertyType.house,
       );
     } catch (_) {
@@ -124,8 +147,10 @@ class PropertyModel {
   static PropertyStatus _parsePropertyStatus(String statusStr) {
     try {
       return PropertyStatus.values.firstWhere(
-        (e) => e.toString() == 'PropertyStatus.$statusStr' || 
-               e.toString().split('.').last.toLowerCase() == statusStr.toLowerCase(),
+        (e) =>
+            e.toString() == 'PropertyStatus.$statusStr' ||
+            e.toString().split('.').last.toLowerCase() ==
+                statusStr.toLowerCase(),
         orElse: () => PropertyStatus.available,
       );
     } catch (_) {
@@ -135,7 +160,7 @@ class PropertyModel {
 
   // Convert a PropertyModel to a Map for Firestore
   Map<String, dynamic> toMap() {
-    return {
+    final map = {
       'title': title,
       'price': price,
       'location': location,
@@ -155,7 +180,25 @@ class PropertyModel {
       'ownerId': ownerId,
       'owner': owner?.toMap(),
       'featured': featured,
+      'amenities': amenities, // Add amenities to map
+      'isApproved': isApproved, // Add isApproved to map
     };
+
+    // Only add admin fields if they are set
+    if (lastReviewedAt != null) {
+      map['lastReviewedAt'] = Timestamp.fromDate(lastReviewedAt!);
+    }
+    if (reviewedBy != null) {
+      map['reviewedBy'] = reviewedBy;
+    }
+    if (adminNotes != null) {
+      map['adminNotes'] = adminNotes;
+    }
+    if (moderationData != null) {
+      map['moderationData'] = moderationData;
+    }
+
+    return map;
   }
 
   // Create a copy of the PropertyModel with modified fields
@@ -180,6 +223,12 @@ class PropertyModel {
     PropertyOwner? owner,
     String? ownerId,
     bool? featured,
+    List<String>? amenities,
+    bool? isApproved,
+    DateTime? lastReviewedAt,
+    String? reviewedBy,
+    String? adminNotes,
+    Map<String, dynamic>? moderationData,
   }) {
     return PropertyModel(
       id: id ?? this.id,
@@ -202,6 +251,25 @@ class PropertyModel {
       owner: owner ?? this.owner,
       ownerId: ownerId ?? this.ownerId,
       featured: featured ?? this.featured,
+      amenities: amenities ?? this.amenities,
+      isApproved: isApproved ?? this.isApproved,
+      lastReviewedAt: lastReviewedAt ?? this.lastReviewedAt,
+      reviewedBy: reviewedBy ?? this.reviewedBy,
+      adminNotes: adminNotes ?? this.adminNotes,
+      moderationData: moderationData ?? this.moderationData,
     );
+  }
+
+  // Helper method to check if property was reviewed recently
+  bool wasReviewedRecently() {
+    if (lastReviewedAt == null) return false;
+    final difference = DateTime.now().difference(lastReviewedAt!);
+    return difference.inDays <
+        7; // Considered recent if reviewed in last 7 days
+  }
+
+  // Helper method to check if property needs admin attention
+  bool needsAdminAttention() {
+    return !isApproved || lastReviewedAt == null;
   }
 }

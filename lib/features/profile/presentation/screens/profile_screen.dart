@@ -10,6 +10,7 @@ import '/features/favorites/providers/favorites_provider.dart';
 import '/core/theme/theme_provider.dart';
 import '/core/services/global_auth_service.dart' show GlobalAuthService;
 import '../../../../features/auth/domain/providers/auth_provider.dart';
+import '../../../../features/auth/domain/services/admin_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   final bool showNavBar;
@@ -455,11 +456,67 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
   }
 
   Widget _buildPropertyStatistics() {
+    // Check if the user is an admin
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final bool isAdmin = authProvider.user != null &&
+        AdminService.isUserAdmin(authProvider.user);
+
+    // If user is an admin, display admin options
+    if (isAdmin) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Admin Dashboard',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.dashboard,
+                    title: 'Dashboard',
+                    count: 1,
+                    color: Colors.purple,
+                    onTap: () => context.push('/admin/dashboard'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.people,
+                    title: 'Users',
+                    count:
+                        0, // Using default value instead of non-existent userCount property
+                    color: Colors.blue,
+                    onTap: () => context.push('/admin/users'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.home_work,
+                    title: 'Properties',
+                    count: _prefs.getStringList('user_listings')?.length ?? 0,
+                    color: Colors.green,
+                    onTap: () => context.push('/admin/properties'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // For non-admin users, display the original property statistics
     // Get actual stats from shared preferences
     final listingCount = _prefs.getStringList('user_listings')?.length ?? 0;
     final viewCount = _prefs.getInt('total_property_views') ?? 0;
     final favoriteCount = _prefs.getInt('favorited_by_others_count') ?? 0;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -755,85 +812,6 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
     }
   }
 
-  // Update the settings modal to use the correct theme toggling
-  void _showSettingsModal(BuildContext modalContext) {
-    showModalBottomSheet(
-      context: modalContext,
-      isScrollControlled: true,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Settings',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Dark Mode Toggle
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Dark Mode'),
-                    subtitle: const Text('Enable dark theme for the app'),
-                    value: _isDarkMode,
-                    onChanged: (value) {
-                      setModalState(() => _isDarkMode = value);
-                    },
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Apply Button with proper mounted checks
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // Save dark mode setting to local preferences
-                        await _prefs.setBool('settings_dark_mode', _isDarkMode);
-
-                        if (!mounted) return;
-
-                        // Get theme provider and properly toggle theme
-                        final themeProvider =
-                            Provider.of<ThemeProvider>(context, listen: false);
-
-                        // Use the toggleTheme method directly if the new value differs from current
-                        if (_isDarkMode != themeProvider.isDarkMode) {
-                          await themeProvider.toggleTheme();
-                        }
-
-                        if (!mounted) return;
-
-                        Navigator.pop(context);
-                        SnackBarUtils.showSuccessSnackBar(
-                            context, 'Theme settings updated');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.lightColorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('Apply Theme'),
-                    ),
-                  ),
-
-                  // Add extra space for bottom padding
-                  SizedBox(
-                      height: MediaQuery.of(context).viewInsets.bottom + 16),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   // Sign out dialog with confirmation
   Future<void> _showSignOutDialog() async {
     return showDialog<void>(
@@ -907,9 +885,6 @@ class _ProfileScreenContentState extends State<_ProfileScreenContent> {
         _userData['name'] = _nameController.text;
         // We're not updating phone or bio anymore
       });
-
-      // Store context before async operation
-      final currentContext = context;
 
       // Save to SharedPreferences
       await _saveUserData();

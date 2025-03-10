@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../providers/admin_provider.dart';
 import '../../domain/models/audit_log.dart';
 
 class AuditLogList extends StatelessWidget {
@@ -34,7 +32,7 @@ class AuditLogList extends StatelessWidget {
       } else {
         return 'Invalid date';
       }
-      
+
       return DateFormat('MMM d, y h:mm a').format(dateTime);
     } catch (e) {
       return 'Invalid date';
@@ -98,120 +96,147 @@ class AuditLogList extends StatelessWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showHeader) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Activity Logs',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          const Divider(height: 1),
-        ],
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: logs.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final log = logs[index];
-              final String action = log['action'] ?? 'unknown';
-              final String userId = log['userId'] ?? 'system';
-              final String details = log['details'] ?? 'No details provided';
-              final timestamp = log['timestamp'];
-              final String resourceType = log['resourceType'] ?? '';
-              final String resourceId = log['resourceId'] ?? '';
-              
-              return ListTile(
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.0, 
-                  vertical: compact ? 4.0 : 8.0,
-                ),
-                leading: CircleAvatar(
-                  backgroundColor: _getActionColor(action).withOpacity(0.2),
-                  child: Icon(
-                    _getActionIcon(action),
-                    color: _getActionColor(action),
-                    size: compact ? 18 : 24,
-                  ),
-                ),
-                title: Text(
-                  compact 
-                    ? '$action ${resourceType.isNotEmpty ? "- $resourceType" : ""}'
-                    : action.toUpperCase(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: compact ? 14 : 16,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!compact) 
-                      Text('By: $userId'),
-                    Text(
-                      details, 
-                      maxLines: compact ? 1 : 2, 
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: compact ? 12 : 14),
-                    ),
-                  ],
-                ),
-                trailing: Text(
-                  _formatTimestamp(timestamp),
-                  style: TextStyle(fontSize: compact ? 10 : 12),
-                ),
-                isThreeLine: !compact,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('${action.toUpperCase()} Log Details'),
-                      content: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('Time: ${_formatTimestamp(timestamp)}'),
-                            const SizedBox(height: 8),
-                            Text('By: $userId'),
-                            if (resourceType.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text('Resource Type: $resourceType'),
-                            ],
-                            if (resourceId.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text('Resource ID: $resourceId'),
-                            ],
-                            const SizedBox(height: 8),
-                            Text('Details: $details'),
-                            const SizedBox(height: 8),
-                            ...log.entries
-                                .where((e) => !['action', 'userId', 'details', 'timestamp', 'resourceType', 'resourceId'].contains(e.key))
-                                .map((e) => Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: Text('${e.key}: ${e.value}'),
-                                    )),
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
+      child: Column(
+        children: [
+          if (showHeader) _buildHeader(),
+          Expanded(
+            child: logs.isEmpty
+                ? const Center(child: Text('No activity logs'))
+                : SingleChildScrollView(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: MediaQuery.of(context).size.width - 32,
+                        ),
+                        child: DataTable(
+                          columnSpacing: 24,
+                          horizontalMargin: 16,
+                          columns: const [
+                            DataColumn(label: Text('Action')),
+                            DataColumn(label: Text('User')),
+                            DataColumn(label: Text('Details')),
+                            DataColumn(label: Text('Time')),
                           ],
+                          rows: logs.map((log) => _buildLogRow(log)).toList(),
                         ),
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Close'),
-                        ),
-                      ],
                     ),
-                  );
-                },
-              );
-            },
+                  ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Activity Logs',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          Text(
+            '${logs.length} entries',
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  DataRow _buildLogRow(Map<String, dynamic> log) {
+    return DataRow(
+      cells: [
+        DataCell(_buildActionCell(log['action'] ?? 'unknown')),
+        DataCell(Text(log['userId'] ?? 'System')),
+        DataCell(_buildDetailsCell(log)),
+        DataCell(Text(_formatTimestamp(log['timestamp']))),
       ],
     );
+  }
+
+  Widget _buildActionCell(String action) {
+    Color color;
+    IconData icon;
+
+    switch (action) {
+      case 'user_create':
+        color = Colors.green;
+        icon = Icons.person_add;
+        break;
+      case 'user_update':
+        color = Colors.blue;
+        icon = Icons.edit;
+        break;
+      case 'user_delete':
+        color = Colors.red;
+        icon = Icons.person_remove;
+        break;
+      case 'grant_admin_role':
+      case 'revoke_admin_role':
+        color = Colors.purple;
+        icon = Icons.admin_panel_settings;
+        break;
+      default:
+        color = Colors.grey;
+        icon = Icons.info_outline;
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 8),
+        Text(_formatAction(action)),
+      ],
+    );
+  }
+
+  Widget _buildDetailsCell(Map<String, dynamic> log) {
+    final metadata = log['metadata'] as Map<String, dynamic>?;
+    if (metadata == null || metadata.isEmpty) {
+      return const Text('No details available');
+    }
+
+    String details = '';
+    metadata.forEach((key, value) {
+      if (value != null) {
+        details += '$key: $value, ';
+      }
+    });
+
+    // Remove trailing comma and space
+    if (details.isNotEmpty) {
+      details = details.substring(0, details.length - 2);
+    }
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 300),
+      child: Text(
+        details,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 2,
+      ),
+    );
+  }
+
+  String _formatAction(String action) {
+    return action.split('_').map((word) {
+      return word.substring(0, 1).toUpperCase() + word.substring(1);
+    }).join(' ');
   }
 }

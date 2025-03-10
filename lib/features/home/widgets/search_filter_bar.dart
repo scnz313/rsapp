@@ -16,32 +16,25 @@ class SearchFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('⚡ SearchFilterBar: Building widget');
-    
+
     return Container(
-      height: 48, // Increased for better touch target
+      height: 48,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[200], // Changed to gray background
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
         children: [
           // Search icon
           const Padding(
-            padding: EdgeInsets.only(left: 16),
+            padding: EdgeInsets.only(left: 12),
             child: Icon(
               Icons.search_rounded,
               color: Colors.grey,
               size: 20,
             ),
           ),
-          
+
           // Text field
           Expanded(
             child: TextField(
@@ -49,7 +42,8 @@ class SearchFilterBar extends StatelessWidget {
               decoration: const InputDecoration(
                 hintText: 'Search properties...',
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
               ),
               style: const TextStyle(fontSize: 15),
@@ -60,24 +54,26 @@ class SearchFilterBar extends StatelessWidget {
               },
             ),
           ),
-          
-          // Filter button - Made much more prominent
+
+          // Menu button - Changed from filter to menu
           Material(
-            color: AppColors.lightColorScheme.primary,
-            borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+            color: Colors.transparent, // Changed to transparent
+            borderRadius:
+                const BorderRadius.horizontal(right: Radius.circular(12)),
             child: InkWell(
               onTap: () {
                 debugPrint('🔴 SearchFilterBar: Filter button tapped');
                 onFilterTap();
               },
-              borderRadius: const BorderRadius.horizontal(right: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.horizontal(right: Radius.circular(12)),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                height: 48, // Same as parent for full height
-                child: const Icon(
-                  Icons.tune_rounded,
-                  color: Colors.white,
-                  size: 22,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                height: 48,
+                child: Icon(
+                  Icons.menu, // Changed icon to menu
+                  color: const Color(0xFF16A34A), // Green color
+                  size: 24,
                 ),
               ),
             ),

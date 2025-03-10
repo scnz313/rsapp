@@ -123,6 +123,11 @@ class _AppBottomNavState extends State<AppBottomNav>
           // Removed Notifications item from navbar
         ];
 
+        // Determine the background color based on the theme
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final backgroundColor =
+            isDarkMode ? Theme.of(context).colorScheme.surface : Colors.white;
+
         // Animated builder for the nav bar
         return AnimatedBuilder(
           animation: _animationController,
@@ -140,6 +145,7 @@ class _AppBottomNavState extends State<AppBottomNav>
                 unselectedItemColor: Colors.grey,
                 showUnselectedLabels: true,
                 elevation: 8,
+                backgroundColor: backgroundColor, // Set the background color
               ),
             );
           },
